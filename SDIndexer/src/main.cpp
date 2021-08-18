@@ -1,16 +1,17 @@
-#include "indexerHashtable.h"
-#include "fileParser.h"
+#include "indexhashtable.h"
+#include "fileparser.h"
+
 #include <iostream>
 #include <vector>
 #include <string>
 
 
-using namespace SDIndexer;
+using namespace sdindexer;
 
 
 // Apllication mode
 enum class application_mode {
-	default_index, create_index, create_write_index, query_index
+	default_index, create_index, query_index
 };
 
 
@@ -39,49 +40,58 @@ void setMode( int argc, char* argv[] );
 
 int main( int argc, char* argv[] ) {
 
-	indexerHashtable index( hashtableSize );
+	IndexHashtable index( hashtableSize );
 	std::vector<std::string> filenames;
 
-	fileParser::toLowercase = true;
-	fileParser::ommitSpecialCharacters = true;
-	fileParser::ommitNumbers = true;
+	FileParser::toLowercase = true;
+	FileParser::ommitSpecialCharacters = true;
+	FileParser::ommitNumbers = true;
 
-	
 
 	///*
 	setMode( argc, argv );
 
 	if ( mode == application_mode::default_index ) {
-		if ( !fileParser::fileExists( indexFileName ) ) {
-			filenames = fileParser::getFilenamesFromDirectories();
-			filenames = fileParser::filterFiles( filenames, approvedExtensions );
+		if ( !FileParser::file_exists( indexFileName ) ) {
+			filenames = FileParser::get_filenames_from_directories();
+			filenames = FileParser::filter_files( filenames, approvedExtensions );
 
 			for ( int i = 0; i < filenames.size(); i++ ) {
-				if ( !fileParser::parseFile( filenames[i], &index ) ) {
+				if ( !FileParser::parse_file( filenames[i], &index ) ) {
 					std::cerr << "Failed to open file \"" << filenames[i] << "\"" << std::endl;
 				}
 			}
-			fileParser::writeIndexFileToDrive( indexFileName, &index );
+			FileParser::write_index_file_to_drive( indexFileName, &index );
+
+		} else {
+			if ( !FileParser::load_index_file( indexFileName, &index ) ) {
+				std::cerr << "Unable to load index file with the name \"" + indexFileName + "\"\n";
+				return 1;
+			}
+			//	Call Queries
 		}
 
-		//	@TODO Add Index Query Code here
+	} else if ( mode == application_mode::create_index ) {
+		filenames = FileParser::get_filenames_from_directories();
+		filenames = FileParser::filter_files( filenames, approvedExtensions );
 
+		for ( int i = 0; i < filenames.size(); i++ ) {
+			if ( !FileParser::parse_file( filenames[i], &index ) ) {
+				std::cerr << "Failed to open file \"" << filenames[i] << "\"" << std::endl;
+			}
+		}
+		FileParser::write_index_file_to_drive( indexFileName, &index );
+
+	} else if ( mode == application_mode::query_index ) {
+		if ( FileParser::load_index_file( indexFileName, &index ) ) {
+			//	Call Queries
+		}
+
+	} else {
+		std::cerr << "No valid mods passed\n";
+		return 1;
 	}
 	//*/
-
-	indexerHashtable index2( hashtableSize );
-	///*
-	if ( fileParser::loadIndexFile( indexFileName, &index2 ) ) {
-		std::cout << "Success\n";
-		fileParser::writeIndexFileToDrive( "iteration2.index", &index2 );
-	}
-	//*/
-
-
-	
-
-	//	@TODO Implement other modes
-
 	return 0;
 }
 
@@ -95,8 +105,6 @@ void setMode( int argc, char* argv[] ) {
 		sarg = argv[1];
 		if ( sarg == "-c" ) {
 			mode = application_mode::create_index;
-		} else if ( sarg == "-cw" ) {
-			mode = application_mode::create_write_index;
 		} else if ( sarg == "-q" ) {
 			mode = application_mode::query_index;
 		}

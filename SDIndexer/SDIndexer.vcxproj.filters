@@ -2,11 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\fileParser.cpp" />
-    <ClCompile Include="src\indexerHashtable.cpp" />
+    <ClCompile Include="src\fileparser.cpp" />
+    <ClCompile Include="src\indexhashtable.cpp" />
+    <ClCompile Include="src\querymanager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\fileParser.h" />
-    <ClInclude Include="src\indexerHashtable.h" />
+    <ClInclude Include="src\fileparser.h" />
+    <ClInclude Include="src\indexhashtable.h" />
+    <ClInclude Include="src\querymanager.h" />
   </ItemGroup>
 </Project>

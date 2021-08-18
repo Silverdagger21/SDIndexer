@@ -1,11 +1,12 @@
 #pragma once
-#include "indexerHashtable.h"
+#include "indexhashtable.h"
+
 #include <vector>
 #include <string>
 
-namespace SDIndexer {
+namespace sdindexer {
 
-	class fileParser {
+	class FileParser {
 
 		public:
 
@@ -14,36 +15,36 @@ namespace SDIndexer {
 		static bool ommitNumbers;
 
 
-		static indexerHashtable* parseFile( std::string filename, indexerHashtable* hashtable );
+		static IndexHashtable* parse_file( std::string filename, IndexHashtable* hashtable );
 
 
-		static bool parseLine( std::string line, indexerHashtable* hashtable, std::string filename );
+		static bool parse_line( std::string line, IndexHashtable* hashtable, std::string filename );
 
 
-		static std::string  parseWord( std::string word );
+		static std::string  parse_word( std::string word );
 
 
-		static std::string removeSpecialCharacters( std::string word );
+		static std::string remove_special_characters( std::string word );
 
 
-		static std::string removeNumbers( std::string word );
+		static std::string remove_numbers( std::string word );
 
 
-		static void writeIndexFileToDrive( std::string filename, indexerHashtable* index );
+		static void write_index_file_to_drive( std::string filename, IndexHashtable* index );
 
 
 		//Returns a vector containing the paths/filenames of all files in the current and sub directories
-		static std::vector<std::string> getFilenamesFromDirectories();
+		static std::vector<std::string> get_filenames_from_directories();
 
 
-		static std::vector<std::string> filterFiles( std::vector<std::string> filenames, std::vector<std::string> extensions );
+		static std::vector<std::string> filter_files( std::vector<std::string> filenames, std::vector<std::string> extensions );
 
 
 		//	Checks whether a file exists in the current directory
-		static bool fileExists( std::string );
+		static bool file_exists( std::string );
 
 
-		static bool loadIndexFile( std::string filename, indexerHashtable* hashtable );
+		static bool load_index_file( std::string filename, IndexHashtable* hashtable );
 	};
 
 }
