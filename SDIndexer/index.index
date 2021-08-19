@@ -226,6 +226,10 @@ sequentially
 melody
 .\testdata0.txt:1
 
+29730
+xdebugquerymanagernativecodeanalysissarif
+.\x64\Debug\CodeAnalysisResultManifest.txt:1
+
 30032
 pop
 .\testdata0.txt:1
@@ -373,6 +377,10 @@ high
 52773
 eat
 .\testdata0.txt:1
+
+53096
+xdebugindexerhashtablenativecodeanalysissarif
+.\x64\Debug\CodeAnalysisResultManifest.txt:1
 
 53916
 integrity
@@ -570,6 +578,10 @@ more
 constant
 .\testdata1.txt:1
 
+84052
+xdebugfileparsernativecodeanalysissarif
+.\x64\Debug\CodeAnalysisResultManifest.txt:1
+
 85653
 due
 .\testdata1.txt:1
@@ -613,6 +625,10 @@ again
 91734
 thickest
 .\testdata1.txt:1
+
+91820
+xdebugmainnativecodeanalysissarif
+.\x64\Debug\CodeAnalysisResultManifest.txt:1
 
 97321
 upon

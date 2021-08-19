@@ -151,12 +151,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\indexhashtableentry.cpp" />
     <ClCompile Include="src\querymanager.cpp" />
     <ClCompile Include="src\indexhashtable.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\fileparser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\indexhashtableentry.h" />
     <ClInclude Include="src\querymanager.h" />
     <ClInclude Include="src\fileparser.h" />
     <ClInclude Include="src\indexhashtable.h" />

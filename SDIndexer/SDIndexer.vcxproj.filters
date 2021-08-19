@@ -5,10 +5,12 @@
     <ClCompile Include="src\fileparser.cpp" />
     <ClCompile Include="src\indexhashtable.cpp" />
     <ClCompile Include="src\querymanager.cpp" />
+    <ClCompile Include="src\indexhashtableentry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\fileparser.h" />
     <ClInclude Include="src\indexhashtable.h" />
     <ClInclude Include="src\querymanager.h" />
+    <ClInclude Include="src\indexhashtableentry.h" />
   </ItemGroup>
 </Project>
