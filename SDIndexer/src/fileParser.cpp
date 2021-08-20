@@ -78,15 +78,20 @@ bool FileParser::parse_line( std::string* line, IndexHashtable* hashtable, std::
 
 void FileParser::parse_word( std::string* word ) {
 	if(toLowercase) {
-		for(int i = 0; i < word->size(); i++) {
-			( *word )[i] = tolower( ( *word )[i] );
-		}
+		convert_to_lowercase( word );
 	}
 	if(ommitSpecialCharacters) {
 		remove_special_characters( word );
 	}
 	if(ommitNumbers) {
 		remove_numbers( word );
+	}
+}
+
+
+void FileParser::convert_to_lowercase( std::string* word ) {
+	for(int i = 0; i < word->size(); i++) {
+		( *word )[i] = tolower( ( *word )[i] );
 	}
 }
 

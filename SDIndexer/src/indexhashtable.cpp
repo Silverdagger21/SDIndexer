@@ -125,8 +125,9 @@ IndexHashtableEntry* sdindexer::IndexHashtable::get_entry( std::string* word ) {
 
 	while(entry != nullptr && entry->get_value() != *word) entry = entry->get_next();
 
-	if(entry == nullptr) return nullptr;
-	else {
+	if(entry == nullptr) {
+		return nullptr;
+	} else {
 		return entry;
 	}
 

@@ -24,6 +24,9 @@ namespace sdindexer {
 		static void  parse_word( std::string* word );
 
 
+		static void convert_to_lowercase( std::string* word );
+
+
 		static void remove_special_characters( std::string* word );
 
 

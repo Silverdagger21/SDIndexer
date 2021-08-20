@@ -7,6 +7,7 @@
 #include <string>
 
 
+
 // @TODO Write querymanager implementation
 
 using namespace sdindexer;
@@ -25,15 +26,6 @@ application_mode mode;
 std::string indexFileName = "index.index";
 std::vector<std::string> approvedExtensions = { ".txt", ".doc" };
 
-
-/*
-	Pipeline:
-		1. state machien asking for options
-		2. creating an index || Quering an index for data
-		3. return the data to the user
-
-	Possibly implement a window interface
-*/
 
 //	Set the mode of operation based on command line arguments
 void setMode( int argc, char* argv[] );
@@ -58,7 +50,7 @@ int main( int argc, char* argv[] ) {
 
 
 	setMode( argc, argv );
-
+	
 	if(mode == application_mode::default_index) {
 		if(!FileParser::file_exists( &indexFileName )) {
 			filenames = FileParser::get_filenames_from_directories();
@@ -76,8 +68,6 @@ int main( int argc, char* argv[] ) {
 				std::cerr << "Unable to load index file with the name \"" + indexFileName + "\"\n";
 				return 1;
 			}
-
-
 		}
 
 		interactive_loop( &index, &queryManager, &query );
@@ -102,9 +92,12 @@ int main( int argc, char* argv[] ) {
 		std::cerr << "No valid mods passed\n";
 		return 1;
 	}
+	
 
 	return 0;
 }
+
+
 
 
 void setMode( int argc, char* argv[] ) {
@@ -126,7 +119,7 @@ void setMode( int argc, char* argv[] ) {
 void user_input( std::string* query ) {
 	query->clear();
 	std::cout << "Type your query: ";
-	std::cin >> *query;
+	std::getline( std::cin, *query );
 }
 
 
@@ -136,7 +129,7 @@ void interactive_loop( IndexHashtable* index, QueryManager* queryManager, std::s
 		user_input( query );
 
 		if(*query != "::") {
-			std::string outputs = queryManager->query_index( *query );
+			std::string outputs = queryManager->query_index( query );
 			std::cout << outputs << std::endl;
 		}
 	} while(*query != "::");
