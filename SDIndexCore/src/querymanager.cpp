@@ -17,7 +17,14 @@ sdindexer::QueryManager::QueryManager( IndexHashtable* index, int limit ) {
 }
 
 
-std::string QueryManager::query_index( std::string* query ) {
+std::vector<RankedDocument> QueryManager::query_index( std::string* query ) {
+	rankedDocuments.clear();
+	direct_match( query );
+	return rankedDocuments;
+}
+
+
+std::string QueryManager::query_index_to_string( std::string* query ) {
 	rankedDocuments.clear();
 	direct_match( query );
 	return convert_result_to_string( results_limit );;

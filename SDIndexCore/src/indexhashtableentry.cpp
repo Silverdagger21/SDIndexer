@@ -95,7 +95,7 @@ void IndexHashtableEntry::load_occurences( std::string* occurences ) {
 	int flag = false;
 
 	for(int i = 0; i < occurences->size(); i++) {
-		if(( *occurences )[i] == ':') {
+		if(( *occurences )[i] == ';') {
 			if(flag) {
 				onp = new OccurenceNode;
 				onp->filename = filename;
@@ -126,10 +126,10 @@ std::string IndexHashtableEntry::to_string() {
 	OccurenceNode* ocnp;
 	data.append( this->value + "\n" );
 	ocnp = this->get_occurances();
-	data.append( ocnp->filename + ":" + std::to_string( ocnp->occurences ) );
+	data.append( ocnp->filename + ";" + std::to_string( ocnp->occurences ) );
 	ocnp = ocnp->next;
 	while(ocnp != nullptr) {
-		data.append( ":" + ocnp->filename + ":" + std::to_string( ocnp->occurences ) );
+		data.append( ";" + ocnp->filename + ";" + std::to_string( ocnp->occurences ) );
 		ocnp = ocnp->next;
 	}
 	return data;

@@ -37,10 +37,10 @@ namespace sdindexer {
 
 
 		//Returns a vector containing the paths/filenames of all files in the current and sub directories
-		static std::vector<std::string> get_filenames_from_directories();
+		static std::vector<std::string> get_filenames_from_directories( std::string* path);
 
 
-		static void filter_files( std::vector<std::string>* filenames, std::vector<std::string>* extensions );
+		static void filter_files_by_extension( std::vector<std::string>* filenames, std::vector<std::string>* extensions );
 
 
 		//	Checks whether a file exists in the current directory

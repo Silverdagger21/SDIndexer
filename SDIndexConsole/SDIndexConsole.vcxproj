@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2bd1f7ec-3a76-4af6-8162-60d6d173902e}</ProjectGuid>
-    <RootNamespace>SDIndexer</RootNamespace>
+    <ProjectGuid>{1345a6bb-4630-426f-abbc-f511c2de6a0b}</ProjectGuid>
+    <RootNamespace>SDIndexConsole</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -88,9 +88,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,9 +102,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <Optimization>Custom</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,7 +118,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <Optimization>Custom</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)SDIndexCore\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,7 +135,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <Optimization>Custom</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)SDIndexCore\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,17 +145,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\indexhashtableentry.cpp" />
-    <ClCompile Include="src\querymanager.cpp" />
-    <ClCompile Include="src\indexhashtable.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\fileparser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\indexhashtableentry.h" />
-    <ClInclude Include="src\querymanager.h" />
-    <ClInclude Include="src\fileparser.h" />
-    <ClInclude Include="src\indexhashtable.h" />
+    <ProjectReference Include="..\SDIndexCore\SDIndexCore.vcxproj">
+      <Project>{58d45d80-f6b1-4b30-8114-9863b7eee8a9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

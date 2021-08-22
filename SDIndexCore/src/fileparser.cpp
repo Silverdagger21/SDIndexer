@@ -127,12 +127,13 @@ void FileParser::write_index_file_to_drive( std::string* filename, IndexHashtabl
 }
 
 
-std::vector<std::string> FileParser::get_filenames_from_directories() {
+std::vector<std::string> FileParser::get_filenames_from_directories(std::string* path) {
 
+	
 	std::vector < std::string> v;
-	std::string path = ".";
+	if(path == nullptr) return v;
 
-	for(const auto& file : std::filesystem::recursive_directory_iterator( path )) {
+	for(const auto& file : std::filesystem::recursive_directory_iterator( *path )) {
 		if(std::filesystem::is_regular_file( file.path() )) {
 			v.push_back( file.path().string() );
 		}
@@ -141,7 +142,7 @@ std::vector<std::string> FileParser::get_filenames_from_directories() {
 }
 
 
-void FileParser::filter_files( std::vector<std::string>* filenames, std::vector<std::string>* extensions ) {
+void FileParser::filter_files_by_extension( std::vector<std::string>* filenames, std::vector<std::string>* extensions ) {
 
 	bool approval = false;
 

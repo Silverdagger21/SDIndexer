@@ -42,19 +42,22 @@ int main( int argc, char* argv[] ) {
 	std::vector<std::string> filenames;
 	QueryManager queryManager( &index );
 	std::string query;
+	std::string dirpath;
 
 
 	FileParser::toLowercase = true;
 	FileParser::ommitSpecialCharacters = true;
 	FileParser::ommitNumbers = true;
 
+	dirpath = ".\\..\\testdata\\";
+	
 
 	setMode( argc, argv );
 	
 	if(mode == application_mode::default_index) {
 		if(!FileParser::file_exists( &indexFileName )) {
-			filenames = FileParser::get_filenames_from_directories();
-			FileParser::filter_files( &filenames, &approvedExtensions );
+			filenames = FileParser::get_filenames_from_directories(&dirpath);
+			FileParser::filter_files_by_extension( &filenames, &approvedExtensions );
 
 			for(int i = 0; i < filenames.size(); i++) {
 				if(!FileParser::parse_file( &filenames[i], &index )) {
@@ -73,8 +76,8 @@ int main( int argc, char* argv[] ) {
 		interactive_loop( &index, &queryManager, &query );
 
 	} else if(mode == application_mode::create_index) {
-		filenames = FileParser::get_filenames_from_directories();
-		FileParser::filter_files( &filenames, &approvedExtensions );
+		filenames = FileParser::get_filenames_from_directories(&dirpath);
+		FileParser::filter_files_by_extension( &filenames, &approvedExtensions );
 
 		for(int i = 0; i < filenames.size(); i++) {
 			if(!FileParser::parse_file( &filenames[i], &index )) {
@@ -129,7 +132,7 @@ void interactive_loop( IndexHashtable* index, QueryManager* queryManager, std::s
 		user_input( query );
 
 		if(*query != "::") {
-			std::string outputs = queryManager->query_index( query );
+			std::string outputs = queryManager->query_index_to_string( query );
 			std::cout << outputs << std::endl;
 		}
 	} while(*query != "::");

@@ -21,7 +21,9 @@ namespace sdindexer {
 		QueryManager( IndexHashtable* index );
 		QueryManager( IndexHashtable* index, int limit );
 
-		std::string query_index( std::string* query );
+		std::vector<RankedDocument> query_index( std::string* query );
+
+		std::string query_index_to_string( std::string* query );
 
 		std::vector<RankedDocument> get_ranked_documents();
 
