@@ -9,31 +9,22 @@ IndexHashtable::IndexHashtable( int size ) {
 	this->hashtable = new IndexHashtableEntry * [size];
 	this->size = size;
 
-	int i;
-	for(i = 0; i < size; i++) {
+	for(int i = 0; i < size; i++) {
 		this->hashtable[i] = nullptr;
 	}
 }
 
+
+
 sdindexer::IndexHashtable::~IndexHashtable() {
 
-	IndexHashtableEntry* entry;
-	IndexHashtableEntry* pentry;
-	int i;
-
-	for(i = 0; i < size; i++) {
-		entry = hashtable[i];
-		while(entry != nullptr) {
-			pentry = entry;
-			entry = entry->get_next();
-			delete pentry;
-		}
-	}
-
+	clear();
 }
 
 
+
 bool IndexHashtable::add_to_index( std::string* word, std::string* filename ) {
+
 	IndexHashtableEntry* entry;
 	bool status = false;
 	unsigned int hashvalue;
@@ -82,9 +73,9 @@ bool IndexHashtable::add_to_index( std::string* word, std::string* filename ) {
 			status = true;
 		}
 	}
-
 	return status;
 }
+
 
 
 bool sdindexer::IndexHashtable::entry_exists( std::string* word ) {
@@ -98,6 +89,7 @@ bool sdindexer::IndexHashtable::entry_exists( std::string* word ) {
 }
 
 
+
 IndexHashtableEntry* sdindexer::IndexHashtable::get_entry_copy( std::string* word ) {
 
 	IndexHashtableEntry* entryptr;
@@ -109,8 +101,8 @@ IndexHashtableEntry* sdindexer::IndexHashtable::get_entry_copy( std::string* wor
 	entryptr = entryptr->clone_entry();
 
 	return entryptr;
-
 }
+
 
 
 IndexHashtableEntry* sdindexer::IndexHashtable::get_entry( std::string* word ) {
@@ -133,6 +125,7 @@ IndexHashtableEntry* sdindexer::IndexHashtable::get_entry( std::string* word ) {
 
 	return nullptr;
 }
+
 
 
 bool IndexHashtable::load_entry( std::string* id, std::string* word, std::string* occurences ) {
@@ -164,7 +157,28 @@ bool IndexHashtable::load_entry( std::string* id, std::string* word, std::string
 }
 
 
+
+void sdindexer::IndexHashtable::clear() {
+
+	IndexHashtableEntry* entry;
+	IndexHashtableEntry* pentry;
+	int i;
+
+	for(i = 0; i < size; i++) {
+		entry = hashtable[i];
+		while(entry != nullptr) {
+			pentry = entry;
+			entry = entry->get_next();
+			delete pentry;
+		}
+		hashtable[i] = nullptr;
+	}
+}
+
+
+
 unsigned int IndexHashtable::hashfunction( std::string* word ) {
+
 	std::hash <std::string> str_hash;
 	unsigned int hashvalue;
 	hashvalue = (unsigned int)str_hash( *word );
@@ -173,7 +187,9 @@ unsigned int IndexHashtable::hashfunction( std::string* word ) {
 }
 
 
+
 std::string IndexHashtable::to_string() {
+
 	std::string data;
 	IndexHashtableEntry* ihe = nullptr;
 
@@ -192,6 +208,4 @@ std::string IndexHashtable::to_string() {
 		}
 	}
 	return data;
-
 }
-

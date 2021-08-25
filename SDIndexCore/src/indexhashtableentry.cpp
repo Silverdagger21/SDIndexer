@@ -5,13 +5,17 @@ using namespace sdindexer;
 
 
 IndexHashtableEntry::IndexHashtableEntry( std::string word ) {
+
 	this->value = word;
 }
 
 
+
 IndexHashtableEntry::IndexHashtableEntry( std::string* word ) {
+
 	this->value = *word;
 }
+
 
 
 sdindexer::IndexHashtableEntry::~IndexHashtableEntry() {
@@ -30,35 +34,49 @@ sdindexer::IndexHashtableEntry::~IndexHashtableEntry() {
 
 
 IndexHashtableEntry* IndexHashtableEntry::get_next() {
+
 	return this->next;
 }
 
 
+
 std::string IndexHashtableEntry::get_value() {
+
 	return this->value;
 }
 
 
+
 OccurenceNode* IndexHashtableEntry::get_occurances() {
+
 	return this->occurences;
 }
 
+
+
 bool IndexHashtableEntry::set_next( IndexHashtableEntry* entry ) {
+
 	this->next = entry;
 	return true;
 }
 
 
+
 bool IndexHashtableEntry::set_value( std::string* value ) {
+
 	this->value = *value;
 	return true;
 }
 
+
+
 bool IndexHashtableEntry::add_occurence( OccurenceNode* occurence ) {
+
 	occurence->next = this->occurences;
 	this->occurences = occurence;
 	return true;
 }
+
 
 
 IndexHashtableEntry* IndexHashtableEntry::clone_entry() {
@@ -73,7 +91,6 @@ IndexHashtableEntry* IndexHashtableEntry::clone_entry() {
 	newEntry->next = this->next;
 	newEntry->occurences = nullptr;
 
-	//Copy Occurence LinkedList
 	ocnp = this->occurences;
 
 	while(ocnp != nullptr) {
@@ -86,6 +103,8 @@ IndexHashtableEntry* IndexHashtableEntry::clone_entry() {
 
 	return newEntry;
 }
+
+
 
 void IndexHashtableEntry::load_occurences( std::string* occurences ) {
 

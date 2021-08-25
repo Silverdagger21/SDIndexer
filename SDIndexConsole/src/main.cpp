@@ -7,133 +7,377 @@
 #include <string>
 
 
+//#define BUFFERED_IO
 
-// @TODO Write querymanager implementation
+#ifndef BUFFERED_IO
+#ifdef _WIN64 
+#include <conio.h>
+#endif
+
+#ifdef __linux__
+
+#endif
+#endif
 
 using namespace sdindexer;
 
 
-// Apllication mode
-enum class application_mode {
-	default_index, create_index, query_index
-};
+// Initializing core objects
+
+const int hashtableSize = 100000;
+IndexHashtable index( hashtableSize );
+std::vector<std::string> filenames;
+QueryManager queryManager( &index );
+std::string query;
+std::string dirpath;
+
+std::vector<std::string> approvedExtensions;
+bool application_loop = true;
+bool has_index = false;
 
 
-// Options
+//	Handles command line argument input
+void parse_arguments( int argc, char* argv[] );
 
-int hashtableSize = 100000;
-application_mode mode;
-std::string indexFileName = "index.index";
-std::vector<std::string> approvedExtensions = { ".txt", ".doc" };
+// Receives input from the user based on the platform
+// retrieves a single letter from the keyboard without pressing enter (if BUFFERED_IO is not defined)
+char get_input();
 
+// Receives a directory from the user, creates an index from it
+void index_directory();
 
-//	Set the mode of operation based on command line arguments
-void setMode( int argc, char* argv[] );
+// First menu
+void initial_menu();
 
-void user_input( std::string* query );
+// Main menu with all options
+void main_menu();
 
-void interactive_loop( IndexHashtable* index, QueryManager* queryManager, std::string* query );
+// Menu where the user controls different options
+void options_menu();
+
+// The main application loop
+void interactive_loop();
 
 
 
 int main( int argc, char* argv[] ) {
 
-	IndexHashtable index( hashtableSize );
-	std::vector<std::string> filenames;
-	QueryManager queryManager( &index );
-	std::string query;
-	std::string dirpath;
-
+	// Setting default options
 
 	FileParser::toLowercase = true;
 	FileParser::ommitSpecialCharacters = true;
 	FileParser::ommitNumbers = true;
+	queryManager.convertToLowercase = true;
+	queryManager.ommitNumbers = true;
+	queryManager.ommitSpecialCharacters = true;
 
-	dirpath = ".\\..\\testdata\\";
-	
 
-	setMode( argc, argv );
-	
-	if(mode == application_mode::default_index) {
-		if(!FileParser::file_exists( &indexFileName )) {
-			filenames = FileParser::get_filenames_from_directories(&dirpath);
-			FileParser::filter_files_by_extension( &filenames, &approvedExtensions );
-
-			for(int i = 0; i < filenames.size(); i++) {
-				if(!FileParser::parse_file( &filenames[i], &index )) {
-					std::cerr << "Failed to open file \"" << filenames[i] << "\"" << std::endl;
-				}
-			}
-			FileParser::write_index_file_to_drive( &indexFileName, &index );
-
-		} else {
-			if(!FileParser::load_index_file( &indexFileName, &index )) {
-				std::cerr << "Unable to load index file with the name \"" + indexFileName + "\"\n";
-				return 1;
-			}
-		}
-
-		interactive_loop( &index, &queryManager, &query );
-
-	} else if(mode == application_mode::create_index) {
-		filenames = FileParser::get_filenames_from_directories(&dirpath);
-		FileParser::filter_files_by_extension( &filenames, &approvedExtensions );
-
-		for(int i = 0; i < filenames.size(); i++) {
-			if(!FileParser::parse_file( &filenames[i], &index )) {
-				std::cerr << "Failed to open file \"" << filenames[i] << "\"" << std::endl;
-			}
-		}
-		FileParser::write_index_file_to_drive( &indexFileName, &index );
-
-	} else if(mode == application_mode::query_index) {
-		if(FileParser::load_index_file( &indexFileName, &index )) {
-			interactive_loop( &index, &queryManager, &query );
-		}
-
-	} else {
-		std::cerr << "No valid mods passed\n";
-		return 1;
+	// Parse command line arguments first
+	if(argc > 1) {
+		parse_arguments( argc, argv );
 	}
-	
+
+	if(!application_loop)return 0;
+
+	interactive_loop();
 
 	return 0;
 }
 
 
 
+void parse_arguments( int argc, char* argv[] ) {
 
-void setMode( int argc, char* argv[] ) {
-	std::string sarg;
+	int i;
+	std::string cla;
 
-	if(argc == 1) {
-		mode = application_mode::default_index;
-	} else {
-		sarg = argv[1];
-		if(sarg == "-c") {
-			mode = application_mode::create_index;
-		} else if(sarg == "-q") {
-			mode = application_mode::query_index;
+	for(i = 1; i < argc; i++) {
+		cla = argv[i];
+
+		// To lowercase option
+		if(cla == "-tlc") {
+			FileParser::toLowercase = true;
+			queryManager.convertToLowercase = true;
+
+			// Do not to lowercase option
+		} else if(cla == "-ntlc") {
+			FileParser::toLowercase = false;
+			queryManager.convertToLowercase = false;
+
+			// Ommit numbers option
+		} else if(cla == "-on") {
+			FileParser::ommitNumbers = true;
+			queryManager.ommitNumbers = true;
+
+			// Do not ommit numbers option
+		} else if(cla == "-non") {
+			FileParser::ommitNumbers = false;
+			queryManager.ommitNumbers = false;
+
+			// Ommit symbols option
+		} else if(cla == "os") {
+			FileParser::ommitSpecialCharacters = true;
+			queryManager.ommitSpecialCharacters = true;
+
+			// Do not ommit symbols option
+		} else if(cla == "nos") {
+			FileParser::ommitSpecialCharacters = false;
+			queryManager.ommitSpecialCharacters = false;
+
+			// Automatically exit the application after execution
+		} else if(cla == "-e") {
+			application_loop = false;
+
+			// Select directory for indexing
+		} else if(cla == "-sd") {
+			i++;
+			if(i < argc) {
+				index_directory();
+
+			} else {
+				std::cout << "Path not specified correctly after option -sd\n";
+				return;
+			}
+
+			// Load index from file
+		} else if(cla == "-li") {
+			i++;
+			if(i < argc) {
+				std::string indexFileName = argv[i];
+				if(!FileParser::load_index_file( &indexFileName, &index )) {
+					std::cout << "Could not load index file " + indexFileName + "\n";
+					return;
+				}
+				has_index = true;
+			} else {
+				std::cout << "No valid index filename after -li option \n";
+				return;
+			}
+
+			// Write index to file
+		} else if(cla == "-wi") {
+			i++;
+			if(i < argc) {
+				std::string indexFileName = argv[i];
+				if(!has_index) {
+					std::cout << "No index file loaded. Make sure the options are in the correct order \n";
+					return;
+				}
+				FileParser::write_index_file_to_drive( &indexFileName, &index );
+			} else {
+				std::cout << "No valid filename after -wi option \n";
+				return;
+			}
+
+			// Query index
+		} else if(cla == "-q") {
+			i++;
+			if(i < argc) {
+				query = argv[i];
+
+				if(!has_index) {
+					std::cout << "No index file loaded. Make sure the options are in the correct order \n";
+					return;
+				}
+				std::cout << "Results:\n" << queryManager.query_index_to_string( &query ) << "\n";
+
+			} else {
+				std::cout << "No valid query after -q option \n";
+				return;
+			}
+		} else if(cla == "-c") {
+			index.clear();
 		}
 	}
 }
 
 
-void user_input( std::string* query ) {
-	query->clear();
-	std::cout << "Type your query: ";
-	std::getline( std::cin, *query );
+
+char get_input() {
+
+	// Buffered requires "enter" press after each option, using conio.h s _getch
+	// makes the input snappier but is platform specific (windows) ehnce pp macros
+
+	char c = ' ';
+
+#ifdef BUFFERED_IO
+	std::string inp;
+	std::getline( std::cin, inp );
+	c = inp[0];
+#endif
+
+#ifndef BUFFERED_IO
+
+#ifdef _WIN64 
+	c = _getch();
+#endif
+
+#ifdef __linux__
+	std::string inp;
+	std::getline( std::cin, inp );
+	c = inp[0];
+#endif
+
+#endif
+
+	return c;
 }
 
 
-void interactive_loop( IndexHashtable* index, QueryManager* queryManager, std::string* query ) {
-	std::cout << "Type :: to exit" << std::endl;
-	do {
-		user_input( query );
 
-		if(*query != "::") {
-			std::string outputs = queryManager->query_index_to_string( query );
-			std::cout << outputs << std::endl;
+void index_directory() {
+
+	filenames = FileParser::get_filenames_from_directories( &dirpath );
+	if(filenames.empty()) {
+		std::cout << "Directory " + dirpath + " does not contain any files \n";
+		return;
+	}
+	if(!approvedExtensions.empty())FileParser::filter_files_by_extension( &filenames, &approvedExtensions );
+	for(int j = 0; j < filenames.size(); j++) {
+		if(!FileParser::parse_file( &filenames[j], &index )) {
+			std::cerr << "Failed to open file \"" << filenames[j] << "\"" << std::endl;
 		}
-	} while(*query != "::");
+	}
+	has_index = true;
+}
+
+
+
+void load_directory() {
+
+	std::string indexFileName;
+
+	std::getline( std::cin, indexFileName );
+
+	if(!FileParser::load_index_file( &indexFileName, &index )) {
+		std::cout << "Could not load index file " + indexFileName + "\n";
+		return;
+	}
+	has_index = true;
+}
+
+
+
+void initial_menu() {
+
+	char c = ' ';
+
+	std::cout << "Options: 'd' select a directory to index | "
+		<< "'l' load the index from a file | "
+		<< "'o' change options | "
+		<< "'e' exit \n";
+
+	c = get_input();
+
+	switch(c) {
+		case 'd':
+			std::cout << "Enter the directory you wish to index\n";
+			std::getline( std::cin, dirpath );
+			index_directory();
+			break;
+
+		case 'l':
+			std::cout << "Enter the index filename\n";
+			load_directory();
+			break;
+
+		case 'o':
+			options_menu();
+			break;
+
+		case 'e':
+			application_loop = false;
+			break;
+	}
+}
+
+
+
+void main_menu() {
+
+	char c = ' ';
+
+	std::cout << "Options: 'd' select a directory to add to index | "
+		<< "'q' query | "
+		<< "'s' save index to file | "
+		<< "'e' exit \n";
+
+	c = get_input();
+
+	switch(c) {
+		case 'd':
+			std::cout << "Enter the directory you wish to index\n";
+			std::getline( std::cin, dirpath );
+			index_directory();
+			break;
+
+		case 'q':
+			std::cout << "Enter your query\n";
+			query.clear();
+			std::getline( std::cin, query );
+			if(!has_index) {
+				std::cout << "No index file loaded\n";
+				return;
+			}
+			std::cout << "Results:\n" << queryManager.query_index_to_string( &query ) << "\n";
+			break;
+
+		case 's':
+			std::cout << "Enter the path and nameof the file you want to save\n";
+			std::getline( std::cin, dirpath );
+			FileParser::write_index_file_to_drive( &dirpath, &index );
+			break;
+
+		case 'e':
+			application_loop = false;
+			break;
+	}
+}
+
+
+
+void options_menu() {
+
+	char c = ' ';
+
+	do {
+		std::cout << "Change: 't' convert to lowercase : " << std::boolalpha << FileParser::toLowercase << " | "
+			<< "'n' ommit numbers : " << FileParser::ommitNumbers << " | "
+			<< "'s' ommit symbols : " << FileParser::ommitSpecialCharacters << " | "
+			<< "'p' previous menu \n";
+
+		c = get_input();
+
+		switch(c) {
+			case 't':
+				FileParser::toLowercase = !FileParser::toLowercase;
+				queryManager.convertToLowercase = !queryManager.convertToLowercase;
+				break;
+
+			case 'n':
+				FileParser::ommitNumbers = !FileParser::ommitNumbers;
+				queryManager.ommitNumbers = !queryManager.ommitNumbers;
+				break;
+
+			case 's':
+				FileParser::ommitSpecialCharacters = !FileParser::ommitSpecialCharacters;
+				queryManager.ommitSpecialCharacters = !queryManager.ommitSpecialCharacters;
+				break;
+		}
+	} while(c != 'p');
+}
+
+
+
+void interactive_loop() {
+
+	std::string userInput;
+
+	do {
+		if(has_index) {
+			main_menu();
+		} else {
+			initial_menu();
+		}
+	} while(application_loop);
 }

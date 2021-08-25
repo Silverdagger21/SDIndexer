@@ -13,12 +13,12 @@ bool FileParser::ommitSpecialCharacters = false;
 bool FileParser::ommitNumbers = false;
 
 
-IndexHashtable* FileParser::parse_file( std::string* filename, IndexHashtable* hashtable ) {
+IndexHashtable* FileParser::parse_file( std::string* filename, IndexHashtable* index ) {
 
 	std::ifstream infile;
 	std::string line;
 
-	if(hashtable == nullptr) {
+	if(index == nullptr) {
 		return nullptr;
 	}
 
@@ -26,7 +26,7 @@ IndexHashtable* FileParser::parse_file( std::string* filename, IndexHashtable* h
 
 	if(infile.is_open()) {
 		while(std::getline( infile, line )) {
-			if(!parse_line( &line, hashtable, filename )) {
+			if(!parse_line( &line, index, filename )) {
 				infile.close();
 				return nullptr;
 			}
@@ -38,11 +38,11 @@ IndexHashtable* FileParser::parse_file( std::string* filename, IndexHashtable* h
 
 	infile.close();
 
-	return hashtable;
+	return index;
 }
 
 
-bool FileParser::parse_line( std::string* line, IndexHashtable* hashtable, std::string* filename ) {
+bool FileParser::parse_line( std::string* line, IndexHashtable* index, std::string* filename ) {
 
 	std::string word;
 	bool status = false;
@@ -57,18 +57,18 @@ bool FileParser::parse_line( std::string* line, IndexHashtable* hashtable, std::
 			word.push_back( c );
 
 		} else {
-			parse_word( &word );
+			parse_word( &word, toLowercase, ommitNumbers, ommitSpecialCharacters );
 			if(!word.empty())
-				status = hashtable->add_to_index( &word, filename );
+				status = index->add_to_index( &word, filename );
 			if(!status) std::cerr << "Problem inputing word into the hashtable" << std::endl;
 			word.clear();
 		}
 		i++;
 	}
 	if(word.length() > 0) {
-		parse_word( &word );
+		parse_word( &word, toLowercase, ommitNumbers, ommitSpecialCharacters );
 		if(!word.empty())
-			status = hashtable->add_to_index( &word, filename );
+			status = index->add_to_index( &word, filename );
 		if(!status) std::cerr << "Problem inputing word into the hashtable" << std::endl;
 		word.clear();
 	}
@@ -76,12 +76,13 @@ bool FileParser::parse_line( std::string* line, IndexHashtable* hashtable, std::
 }
 
 
-void FileParser::parse_word( std::string* word ) {
+void FileParser::parse_word( std::string* word, bool toLowercase, bool  ommitNumbers, bool ommitSpecialCharacters ) {
+
 	if(toLowercase) {
 		convert_to_lowercase( word );
 	}
 	if(ommitSpecialCharacters) {
-		remove_special_characters( word );
+		remove_symbols( word );
 	}
 	if(ommitNumbers) {
 		remove_numbers( word );
@@ -90,13 +91,15 @@ void FileParser::parse_word( std::string* word ) {
 
 
 void FileParser::convert_to_lowercase( std::string* word ) {
+
 	for(int i = 0; i < word->size(); i++) {
 		( *word )[i] = tolower( ( *word )[i] );
 	}
 }
 
 
-void FileParser::remove_special_characters( std::string* word ) {
+void FileParser::remove_symbols( std::string* word ) {
+
 	for(int i = 0; i < word->size(); i++) {
 		if(( ( *word )[i] < 'A' || ( *word )[i] > 'Z' ) && ( ( *word )[i] < 'a' || ( *word )[i] > 'z' ) && ( ( *word )[i] < '0' || ( *word )[i] > '9' )) {
 			word->erase( i, 1 );
@@ -107,6 +110,7 @@ void FileParser::remove_special_characters( std::string* word ) {
 
 
 void FileParser::remove_numbers( std::string* word ) {
+
 	for(int i = 0; i < word->size(); i++) {
 		if(( *word )[i] >= '0' && ( *word )[i] <= '9') {
 			word->erase( i, 1 );
@@ -127,9 +131,8 @@ void FileParser::write_index_file_to_drive( std::string* filename, IndexHashtabl
 }
 
 
-std::vector<std::string> FileParser::get_filenames_from_directories(std::string* path) {
+std::vector<std::string> FileParser::get_filenames_from_directories( std::string* path ) {
 
-	
 	std::vector < std::string> v;
 	if(path == nullptr) return v;
 
@@ -164,6 +167,11 @@ void FileParser::filter_files_by_extension( std::vector<std::string>* filenames,
 }
 
 
+
+sdindexer::FileParser::FileParser() {}
+
+
+
 bool FileParser::file_exists( std::string* filename ) {
 
 	std::ifstream ifs;
@@ -178,14 +186,14 @@ bool FileParser::file_exists( std::string* filename ) {
 
 
 
-bool FileParser::load_index_file( std::string* filename, IndexHashtable* hashtable ) {
+bool FileParser::load_index_file( std::string* filename, IndexHashtable* index ) {
 
 	std::ifstream ifs;
 	std::string line;
 	int state = 0;
 	std::string id, word, occurences;
 
-	if(hashtable == nullptr) return false;
+	if(index == nullptr) return false;
 
 	ifs.open( *filename, std::ios::in );
 
@@ -207,7 +215,7 @@ bool FileParser::load_index_file( std::string* filename, IndexHashtable* hashtab
 				case 2:
 				occurences.clear();
 				occurences = line;
-				if(!hashtable->load_entry( &id, &word, &occurences ))return false;
+				if(!index->load_entry( &id, &word, &occurences ))return false;
 				state++;
 				break;
 				case 3:

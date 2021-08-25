@@ -4,6 +4,7 @@
 
 namespace sdindexer {
 
+	// This class is the entry point of the UI
 	class WinEntry : public wxApp{
 		
 		public:
@@ -11,10 +12,14 @@ namespace sdindexer {
 		WinEntry();
 		~WinEntry();
 
-		virtual bool OnInit();
+
+		// Initializes the frame
+		virtual bool OnInit() override;
+
 
 		private:
 
+		
 		Primary* pFrame = nullptr;
 	};
 }
