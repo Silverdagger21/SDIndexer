@@ -1,11 +1,11 @@
 #include "winentry.h"
 
 
-using namespace sdindexer;
+using namespace sdindex;
 
-wxIMPLEMENT_APP( WinEntry );
+wxIMPLEMENT_APP(WinEntry);
 
-WinEntry::WinEntry(){}
+WinEntry::WinEntry() {}
 
 WinEntry::~WinEntry() {}
 

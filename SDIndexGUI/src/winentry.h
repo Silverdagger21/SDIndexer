@@ -2,11 +2,11 @@
 #include <wx/wx.h>
 #include "Primary.h"
 
-namespace sdindexer {
+namespace sdindex {
 
 	// This class is the entry point of the UI
-	class WinEntry : public wxApp{
-		
+	class WinEntry : public wxApp {
+
 		public:
 
 		WinEntry();
@@ -19,7 +19,7 @@ namespace sdindexer {
 
 		private:
 
-		
+
 		Primary* pFrame = nullptr;
 	};
 }

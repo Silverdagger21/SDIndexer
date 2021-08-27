@@ -2,7 +2,7 @@
 #include <string>
 
 
-namespace sdindexer {
+namespace sdindex {
 
 	//A representation of how many times a word occured and at which file
 	typedef struct OccurenceNode {
@@ -20,8 +20,8 @@ namespace sdindexer {
 		public:
 
 
-		IndexHashtableEntry( std::string word );
-		IndexHashtableEntry( std::string* word );
+		IndexHashtableEntry(std::string word);
+		IndexHashtableEntry(std::string* word);
 		~IndexHashtableEntry();
 
 		// Returns the next entry in the list
@@ -37,11 +37,11 @@ namespace sdindexer {
 
 
 		// Adds an occurence node to the list
-		bool add_occurence( OccurenceNode* occurence );
+		bool add_occurence(OccurenceNode* occurence);
 
 
 		// Loads the occurences stored in the string
-		void load_occurences( std::string* occurences );
+		void load_occurences(std::string* occurences);
 
 
 		// Provides a string representation of all the data contained in the entry
@@ -62,11 +62,11 @@ namespace sdindexer {
 
 
 		// Sets the next entry in the list
-		bool set_next( IndexHashtableEntry* entry );
+		bool set_next(IndexHashtableEntry* entry);
 
 
 		// Sets the value of the entry
-		bool set_value( std::string* value );
+		bool set_value(std::string* value);
 
 		// Provides a copy of the entry and all its data
 		IndexHashtableEntry* clone_entry();
