@@ -34,6 +34,7 @@ namespace sdindex {
 		QueryManager queryManager = QueryManager(&hashtable);
 
 
+		// Contains extensions to include or exclude
 		std::vector<std::string> extensions;
 
 		// Flags helping us determine options
@@ -42,6 +43,16 @@ namespace sdindex {
 		bool toLowercase = true;
 		bool ommitNumbers = true;
 		bool ommitSpecialCharacters = true;
+		bool extensionsInclude = true;
+
+
+		wxStaticText* optionsText = nullptr;
+
+		wxStaticText* extensionsText = nullptr;
+
+		wxStaticText* searchText = nullptr;
+
+		wxStaticText* resultsText = nullptr;
 
 
 		// Provides the "default" font for the window
@@ -65,15 +76,15 @@ namespace sdindex {
 
 
 		// Togglebutton enabling the user to determine whether to convert all characters to lowercase for ease or not
-		wxToggleButton* toLowercaseButton = nullptr;
+		wxToggleButton* toLowercaseToggleButton = nullptr;
 
 
 		// Togglebutton enabling the user to determine whether to ommit numbers or not
-		wxToggleButton* ommitNumbersButton = nullptr;
+		wxToggleButton* ommitNumbersToggleButton = nullptr;
 
 
 		// Togglebutton enabling the user to determine whether to ommit special characters or not
-		wxToggleButton* ommitSymbolsButton = nullptr;
+		wxToggleButton* ommitSymbolsToggleButton = nullptr;
 
 
 		// Textarea widget enabling the user to type what they want to search for
@@ -90,6 +101,14 @@ namespace sdindex {
 
 		// Listbox widget used to display the results of the query operation as well as enabling the user to select a file
 		wxListBox* resultsListArea = nullptr;
+
+
+		// Textarea widget enabling the user to type the extensions they want
+		wxTextCtrl* extensionsArea = nullptr;
+
+
+		// Togglebutton enabling the user to determine whether to ommit numbers or not
+		wxToggleButton* extensionsToggleButton = nullptr;
 
 
 
@@ -123,6 +142,10 @@ namespace sdindex {
 
 		// Handles updating the options and the UI when the "symbols" togglebutton is clicked
 		void on_ommit_special_clicked(wxCommandEvent& evt);
+
+
+		// Handles updating the options and the UI when the "to lowercase" togglebutton is clicked
+		void on_extensions_clicked(wxCommandEvent& evt);
 
 
 		// Handles querying the index when the "query" button is clicked

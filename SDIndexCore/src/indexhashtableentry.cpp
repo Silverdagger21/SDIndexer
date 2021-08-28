@@ -4,16 +4,9 @@
 using namespace sdindex;
 
 
-IndexHashtableEntry::IndexHashtableEntry(std::string word) {
+IndexHashtableEntry::IndexHashtableEntry(const std::string& word) {
 
 	this->value = word;
-}
-
-
-
-IndexHashtableEntry::IndexHashtableEntry(std::string* word) {
-
-	this->value = *word;
 }
 
 
@@ -24,7 +17,7 @@ sdindex::IndexHashtableEntry::~IndexHashtableEntry() {
 	OccurenceNode* pcnp;
 
 	ocnp = occurences;
-	while(ocnp!=nullptr) {
+	while(ocnp != nullptr) {
 		pcnp = ocnp;
 		ocnp = ocnp->next;
 		delete pcnp;
@@ -62,9 +55,9 @@ bool IndexHashtableEntry::set_next(IndexHashtableEntry* entry) {
 
 
 
-bool IndexHashtableEntry::set_value(std::string* value) {
+bool IndexHashtableEntry::set_value(std::string& value) {
 
-	this->value = *value;
+	this->value = value;
 	return true;
 }
 
@@ -93,7 +86,7 @@ IndexHashtableEntry* IndexHashtableEntry::clone_entry() {
 
 	ocnp = this->occurences;
 
-	while(ocnp!=nullptr) {
+	while(ocnp != nullptr) {
 		newoc = new OccurenceNode;
 		*newoc = *ocnp;
 		newoc->next = newEntry->occurences;
@@ -106,15 +99,15 @@ IndexHashtableEntry* IndexHashtableEntry::clone_entry() {
 
 
 
-void IndexHashtableEntry::load_occurences(std::string* occurences) {
+void IndexHashtableEntry::load_occurences(const std::string& occurences) {
 
 	OccurenceNode* onp;
 	std::string filename;
 	std::string appearances;
 	int flag = false;
 
-	for(int i = 0; i<occurences->size(); i++) {
-		if((*occurences)[i]==';') {
+	for(int i = 0; i < occurences.size(); i++) {
+		if(occurences[i] == ';') {
 			if(flag) {
 				onp = new OccurenceNode;
 				onp->filename = filename;
@@ -125,9 +118,9 @@ void IndexHashtableEntry::load_occurences(std::string* occurences) {
 			}
 			flag = !flag;
 		} else if(flag) {
-			appearances.push_back((*occurences)[i]);
+			appearances.push_back(occurences[i]);
 		} else {
-			filename.push_back((*occurences)[i]);
+			filename.push_back(occurences[i]);
 		}
 	}
 
@@ -143,12 +136,12 @@ std::string IndexHashtableEntry::to_string() {
 
 	std::string data;
 	OccurenceNode* ocnp;
-	data.append(this->value+"\n");
+	data.append(this->value + "\n");
 	ocnp = this->get_occurances();
-	data.append(ocnp->filename+";"+std::to_string(ocnp->occurences));
+	data.append(ocnp->filename + ";" + std::to_string(ocnp->occurences));
 	ocnp = ocnp->next;
-	while(ocnp!=nullptr) {
-		data.append(";"+ocnp->filename+";"+std::to_string(ocnp->occurences));
+	while(ocnp != nullptr) {
+		data.append(";" + ocnp->filename + ";" + std::to_string(ocnp->occurences));
 		ocnp = ocnp->next;
 	}
 	return data;

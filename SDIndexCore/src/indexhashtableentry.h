@@ -20,8 +20,8 @@ namespace sdindex {
 		public:
 
 
-		IndexHashtableEntry(std::string word);
-		IndexHashtableEntry(std::string* word);
+		IndexHashtableEntry(const std::string& word);
+
 		~IndexHashtableEntry();
 
 		// Returns the next entry in the list
@@ -41,7 +41,7 @@ namespace sdindex {
 
 
 		// Loads the occurences stored in the string
-		void load_occurences(std::string* occurences);
+		void load_occurences(const std::string& occurences);
 
 
 		// Provides a string representation of all the data contained in the entry
@@ -66,7 +66,7 @@ namespace sdindex {
 
 
 		// Sets the value of the entry
-		bool set_value(std::string* value);
+		bool set_value(std::string& value);
 
 		// Provides a copy of the entry and all its data
 		IndexHashtableEntry* clone_entry();

@@ -20,23 +20,23 @@ namespace sdindex {
 
 
 		// Adds the specified string to the index
-		bool add_to_index(std::string* word, std::string* filename);
+		bool add_to_index(const std::string& word, const std::string& filename);
 
 
 		// Checks whether the specified word exists in the index
-		bool entry_exists(std::string* word);
+		bool entry_exists(const std::string& word);
 
 
 		// Provides a copy of the index entry matching the word input
-		IndexHashtableEntry* get_entry_copy(std::string* word);
+		IndexHashtableEntry* get_entry_copy(const std::string& word);
 
 
 		// Returns a pointer reference to the entry matching the word input
-		IndexHashtableEntry* get_entry(std::string* word);
+		IndexHashtableEntry* get_entry(const std::string& word);
 
 
 		// Loads an entry into the index
-		bool load_entry(std::string* id, std::string* word, std::string* occurences);
+		bool load_entry(const std::string& id, const std::string& word, const std::string& occurences);
 
 
 		// Clears the index removing all entries
@@ -52,7 +52,7 @@ namespace sdindex {
 
 
 		// The hashfunction used to match words to hashvalues
-		unsigned int hashfunction(std::string* word);
+		unsigned int hashfunction(const std::string& word);
 	};
 
 }

@@ -6,7 +6,6 @@ You can use either the GUI the console or command line arguments.
 
 
 ## Usage
-#
 To start with:
 
 * Select a **directory** to index or file to load the index
@@ -24,7 +23,6 @@ To start with:
 
 
 ## Implemenetation
-#
 
 The `console` implementation depends mainly on standard libraries with the exception of the `conio.h` library used in windows to make the console more responsive.
 
@@ -33,6 +31,5 @@ framework, which is cross platform.
 
 
 ### Final notes
-#
 
 
