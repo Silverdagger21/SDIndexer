@@ -40,6 +40,7 @@ namespace sdindex {
 		// Flags helping us determine options
 
 		bool hasLoadedIndex = false;
+		bool indexing = false;
 		bool toLowercase = true;
 		bool ommitNumbers = true;
 		bool ommitSpecialCharacters = true;
@@ -53,6 +54,8 @@ namespace sdindex {
 		wxStaticText* searchText = nullptr;
 
 		wxStaticText* resultsText = nullptr;
+
+		wxStaticText* instructions_text = nullptr;
 
 
 		// Provides the "default" font for the window
@@ -154,6 +157,11 @@ namespace sdindex {
 
 		// Handles copying a result selected from the "resultsListArea" to the clipboard when the "copy" button is clicked
 		void on_copy_clicked(wxCommandEvent& evt);
+
+
+		// Allowing the press of querybutton by pressing enter while typing in queryArea
+		void on_enter_pressed(wxCommandEvent& evt);
+
 
 
 

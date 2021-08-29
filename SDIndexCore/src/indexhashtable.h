@@ -43,6 +43,14 @@ namespace sdindex {
 		void clear();
 
 
+		// Takes all the occurences from the otherIndex
+		void steal_occurences(IndexHashtable* otherIndex);
+
+
+		//
+		bool merge(IndexHashtable* otherIndex);
+
+
 		// Provides a string containing all the data contained in the index
 		std::string to_string();
 

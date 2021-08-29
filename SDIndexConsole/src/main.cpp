@@ -143,7 +143,7 @@ void parse_arguments(int argc, char* argv[]) {
 			i++;
 			if(i < argc) {
 				dirpath = argv[i];
-				hasIndex = FileParser::index_directory(dirpath, index, extensions);
+				hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
 
 			} else {
 				std::cout << "Path not specified correctly after option -sd\n";
@@ -267,7 +267,7 @@ void initial_menu() {
 	case 'd':
 		std::cout << "Enter the directory you wish to index\n";
 		std::getline(std::cin, dirpath);
-		hasIndex = FileParser::index_directory(dirpath, index, extensions);
+		hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
 		break;
 
 	case 'l':
@@ -309,9 +309,9 @@ void main_menu() {
 		std::cout << "Enter the directory you wish to index\n";
 		std::getline(std::cin, dirpath);
 		if(!hasIndex) {
-			hasIndex = FileParser::index_directory(dirpath, index, extensions);
+			hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
 		} else {
-			FileParser::index_directory(dirpath, index, extensions);
+			FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
 		}
 		break;
 

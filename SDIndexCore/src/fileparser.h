@@ -22,10 +22,10 @@ namespace sdindex {
 
 
 		// Goes through all the files in the specified directory and sub directories and indexes the contents
-		static bool index_directory(const std::string& dirpath, IndexHashtable& index);
+		static bool index_directory_and_subdirectories(const std::string& dirpath, IndexHashtable& index);
 
 		// Goes through all the files in the specified directory and sub directories and indexes the contents
-		static bool index_directory(const std::string& dirpath, IndexHashtable& index, const std::vector<std::string>& extensions);
+		static bool index_directory_and_subdirectories(const std::string& dirpath, IndexHashtable& index, const std::vector<std::string>& extensions);
 
 
 		// Parses the file specified in "filename" and populates the index
@@ -73,6 +73,9 @@ namespace sdindex {
 		// Splits a string into a vector of strings based on the specified character
 		static std::vector<std::string> split_string(const std::string& input, const char& c);
 
+
+		//
+		static void index_files(const std::vector<std::string*>& filenames, IndexHashtable& index);
 
 
 		protected:

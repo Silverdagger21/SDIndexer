@@ -22,6 +22,7 @@ EVT_TOGGLEBUTTON(7, on_ommit_special_clicked)
 EVT_TOGGLEBUTTON(9, on_extensions_clicked)
 EVT_BUTTON(11, on_query_clicked)
 EVT_BUTTON(12, on_copy_clicked)
+EVT_TEXT_ENTER(10, on_enter_pressed)
 wxEND_EVENT_TABLE()
 
 
@@ -35,11 +36,16 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 	wxSize dirSelectorSize(600, ygap);
 	wxFont myf = get_font1();
 	wxFont cbf = get_font1();
+	wxFont itf = get_font1();
 
 	Bind(wxEVT_SIZE, &Primary::OnSize, this);
 	cbf.SetStrikethrough(true);
 
-	dirSelect = new wxDirPickerCtrl(this, 1, wxEmptyString, wxDirSelectorPromptStr, start, dirSelectorSize);
+	itf.SetPointSize(12);
+
+	dirSelect = new wxDirPickerCtrl(this, 1, wxEmptyString, wxDirSelectorPromptStr, start, dirSelectorSize, wxDIRP_DEFAULT_STYLE);
+
+	dirSelect->GetTextCtrl()->SetEditable(false);
 
 	loadButton = new wxButton(this, 2, wxString("Load"),
 		wxPoint(dirSelect->GetPosition().x + dirSelect->GetSize().x + xgap, start.y),
@@ -79,6 +85,9 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 		wxPoint(wxPoint(loadButton->GetPosition().x, toLowercaseToggleButton->GetPosition().y)),
 		wxSize(buttonsize));;
 
+	instructions_text = new wxStaticText(this, 18, wxString("Select a directory to index"), wxPoint(saveFileButton->GetPosition().x,
+		extensionsToggleButton->GetPosition().y), wxSize(buttonsize.x * 2 + xgap, buttonsize.y + ygap));
+
 	toLowercaseToggleButton->SetValue(toLowercase);
 	ommitNumbersToggleButton->SetValue(!ommitNumbers);
 	ommitSymbolsToggleButton->SetValue(!ommitSpecialCharacters);
@@ -86,7 +95,7 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 
 	queryArea = new wxTextCtrl(this, 10, wxEmptyString,
 		wxPoint(start.x, toLowercaseToggleButton->GetPosition().y + toLowercaseToggleButton->GetSize().y + ygap),
-		dirSelectorSize);
+		dirSelectorSize, wxTE_PROCESS_ENTER);
 
 	queryButton = new wxButton(this, 11, wxString("Query"),
 		wxPoint(queryArea->GetPosition().x + queryArea->GetSize().x + xgap, queryArea->GetPosition().y),
@@ -125,6 +134,7 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 	ommitSymbolsToggleButton->SetFont(myf);
 	extensionsArea->SetFont(myf);
 	extensionsToggleButton->SetFont(myf);
+	instructions_text->SetFont(itf);
 	queryArea->SetFont(myf);
 	queryButton->SetFont(myf);
 	copyToClipboardButton->SetFont(myf);
@@ -134,10 +144,30 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 	searchText->SetFont(myf);
 	resultsText->SetFont(myf);
 
+	dirSelect->SetToolTip("Select a directory to index");
+	loadButton->SetToolTip("Load a previously saved index file");
+	saveFileButton->SetToolTip("Save index into a file");
+	clearButton->SetToolTip("Clears index and all fields");
+	toLowercaseToggleButton->SetToolTip("Choose whether to convert everything to lowercase");
+	ommitNumbersToggleButton->SetToolTip("Choose whether to ommit indexing numbers");
+	ommitSymbolsToggleButton->SetToolTip("Choose whether to ommit indexing symbols");
+	extensionsArea->SetToolTip("Type the extensions you want seperate with space \".txt .cpp\"");
+	extensionsToggleButton->SetToolTip("Choose whether to include files with set extensions or exclude them");
+	instructions_text->SetToolTip("Shows whether index has been loaded or not");
+	queryArea->SetToolTip("Type what you want to search for");
+	queryButton->SetToolTip("Click to search");
+	copyToClipboardButton->SetToolTip("Copy a selected result to clipboard");
+	resultsListArea->SetToolTip("Shows you the results");
+
+
+
 	if(!toLowercase) toLowercaseToggleButton->SetFont(cbf);
 	if(ommitNumbers) ommitNumbersToggleButton->SetFont(cbf);
 	if(ommitSpecialCharacters) ommitSymbolsToggleButton->SetFont(cbf);
 	if(!extensionsInclude)extensionsToggleButton->SetLabel("exclude");
+
+	instructions_text->SetForegroundColour(wxColour(wxT("BLACK")));
+
 
 }
 
@@ -159,7 +189,15 @@ void Primary::on_dir_changed(wxFileDirPickerEvent& evt) {
 	std::string directory;
 	std::vector < std::string > filenames;
 
+	//if(!wxDirExists(dirSelect->GetPath()))return;
+
 	directory = dirSelect->GetPath().ToStdString();
+
+	if(indexing) return;
+	indexing = true;
+
+	instructions_text->SetLabel("Indexing...");
+	instructions_text->SetForegroundColour(wxColor(204, 102, 0));
 
 	if(directory.empty()) {
 		wxMessageDialog dlg(this, "Please select a directory");
@@ -168,24 +206,15 @@ void Primary::on_dir_changed(wxFileDirPickerEvent& evt) {
 		return;
 	}
 
-	filenames = FileParser::get_filenames_from_directories(directory);
 	FileParser::allowExtensions = extensionsInclude;
 	std::string extString = std::string(extensionsArea->GetLineText(0));
 	extensions = FileParser::split_string(extString, ' ');
-	FileParser::filter_files_by_extension(filenames, extensions);
+	hasLoadedIndex = FileParser::index_directory_and_subdirectories(directory, hashtable, extensions);
 
-	FileParser::toLowercase = toLowercase;
-	FileParser::ommitNumbers = ommitNumbers;
-	FileParser::ommitSpecialCharacters = ommitSpecialCharacters;
+	indexing = false;
 
-	for(int i = 0; i < filenames.size(); i++) {
-		if(!FileParser::parse_file(filenames[i], hashtable)) {
-			wxMessageDialog dlg(this, "Failed top open" + wxString(filenames[i]));
-			dlg.Show();
-		}
-	}
-
-	hasLoadedIndex = true;
+	instructions_text->SetLabel("Index Loaded!");
+	instructions_text->SetForegroundColour(wxColor(0, 153, 0));
 
 	evt.Skip();
 }
@@ -204,6 +233,12 @@ void Primary::on_load_clicked(wxCommandEvent& evt) {
 		return;
 	}
 
+	if(indexing) return;
+	indexing = true;
+
+	instructions_text->SetLabel("Loading index...");
+	instructions_text->SetForegroundColour(wxColor(204, 102, 0));
+
 	indexFileName = openFileDialog.GetPath().ToStdString();
 
 	if(!FileParser::load_index_file(indexFileName, hashtable)) {
@@ -214,6 +249,10 @@ void Primary::on_load_clicked(wxCommandEvent& evt) {
 	}
 
 	hasLoadedIndex = true;
+	indexing = false;
+
+	instructions_text->SetLabel("Index Loaded!");
+	instructions_text->SetForegroundColour(wxColor(0, 51, 0));
 
 	evt.Skip();
 }
@@ -255,6 +294,9 @@ void sdindex::Primary::on_clear_clicked(wxCommandEvent& evt) {
 	dirSelect->SetPath("");
 	extensionsArea->Clear();
 	hasLoadedIndex = false;
+
+	instructions_text->SetLabel("Index Cleared");
+	instructions_text->SetForegroundColour(wxColor(255, 255, 255));
 	evt.Skip();
 }
 
@@ -301,6 +343,7 @@ void sdindex::Primary::on_ommit_special_clicked(wxCommandEvent& evt) {
 }
 
 void sdindex::Primary::on_extensions_clicked(wxCommandEvent& evt) {
+
 	if(extensionsToggleButton->GetValue()) {
 		extensionsToggleButton->SetLabel("include");
 		extensionsInclude = true;
@@ -346,8 +389,7 @@ void Primary::on_query_clicked(wxCommandEvent& evt) {
 		wxString entry(std::to_string(i) + ". " + rdv[i].filename);
 		resultsListArea->AppendString(entry);
 	}
-
-	evt.Skip();
+	//evt.Skip();
 }
 
 
@@ -385,6 +427,16 @@ void sdindex::Primary::on_copy_clicked(wxCommandEvent& evt) {
 
 
 
+void sdindex::Primary::on_enter_pressed(wxCommandEvent& evt) {
+
+	on_query_clicked(evt);
+}
+
+
+
+
+
+
 void Primary::OnSize(wxSizeEvent& event) {
 
 	int xgap = 15;
@@ -408,6 +460,10 @@ void Primary::OnSize(wxSizeEvent& event) {
 
 	extensionsToggleButton->SetPosition(wxPoint(loadButton->GetPosition().x, toLowercaseToggleButton->GetPosition().y));
 
+
+	instructions_text->SetPosition(wxPoint(saveFileButton->GetPosition().x, extensionsToggleButton->GetPosition().y));
+
+
 	queryArea->SetSize(wxSize(dirSelect->GetSize()));
 
 	queryButton->SetPosition(
@@ -424,7 +480,5 @@ void Primary::OnSize(wxSizeEvent& event) {
 
 
 
-
-
-	event.Skip();
+	//event.Skip();
 }

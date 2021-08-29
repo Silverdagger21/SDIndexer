@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <thread>
 
 
 using namespace sdindex;
@@ -16,7 +17,13 @@ bool FileParser::allowExtensions = true;
 
 
 
-bool sdindex::FileParser::index_directory(const std::string& dirpath, IndexHashtable& index) {
+bool FileParser::index_directory_and_subdirectories(const std::string& dirpath, IndexHashtable& index) {
+
+	const unsigned int thread_count = std::thread::hardware_concurrency();
+	unsigned int i, j;
+	IndexHashtable* indexArray = new IndexHashtable[thread_count - 1];
+	std::vector<std::string*>* filenameArray = new std::vector<std::string*>[thread_count];
+	std::thread** indexWorkers = new std::thread * [thread_count];
 
 	std::vector<std::string> filenames = FileParser::get_filenames_from_directories(dirpath);
 	if(filenames.empty()) {
@@ -24,29 +31,103 @@ bool sdindex::FileParser::index_directory(const std::string& dirpath, IndexHasht
 		return false;
 	}
 
-	for(int j = 0; j < filenames.size(); j++) {
-		if(!FileParser::parse_file(filenames[j], index)) {
-			std::cerr << "Failed to open file \"" << filenames[j] << "\"" << std::endl;
+	if(thread_count == 0) {
+		std::cerr << "Unable to calculate core count \n";
+		for(int j = 0; j < filenames.size(); j++) {
+			if(!FileParser::parse_file(filenames[j], index)) {
+				std::cerr << "Failed to open file \"" << filenames[j] << "\"" << std::endl;
+			}
+		}
+		return true;
+	}
+
+	i = j = 0;
+	while(i < filenames.size()) {
+		filenameArray[j].push_back(&filenames[i]);
+		i++;
+		j++;
+		if(j >= thread_count) j = 0;
+	}
+
+	for(i = 0; i < thread_count; i++) {
+		if(i < thread_count - 1) {
+			indexWorkers[i] = new std::thread(index_files, std::cref(filenameArray[i]), std::ref(indexArray[i]));
+		} else {
+			indexWorkers[i] = new std::thread(index_files, std::cref(filenameArray[i]), std::ref(index));
 		}
 	}
+
+	for(i = 0; i < thread_count; i++) {
+		indexWorkers[i]->join();
+		if(!index.merge(&indexArray[i])) {
+			std::cerr << "Could not merge indexes" << std::endl;
+		}
+	}
+
+	delete[] indexArray;
+	delete[] filenameArray;
+	delete[] indexWorkers;
+
 	return true;
 }
 
 
 
-bool sdindex::FileParser::index_directory(const std::string& dirpath, IndexHashtable& index, const std::vector<std::string>& extensions) {
+bool FileParser::index_directory_and_subdirectories(const std::string& dirpath, IndexHashtable& index, const std::vector<std::string>& extensions) {
+
+	const unsigned int thread_count = std::thread::hardware_concurrency();
+	unsigned int i, j;
+	IndexHashtable* indexArray = new IndexHashtable[thread_count - 1];
+	std::vector<std::string*>* filenameArray = new std::vector<std::string*>[thread_count];
+	std::thread** indexWorkers = new std::thread * [thread_count];
 
 	std::vector<std::string> filenames = FileParser::get_filenames_from_directories(dirpath);
 	if(filenames.empty()) {
 		std::cout << "Directory " + dirpath + " does not contain any files \n";
 		return false;
 	}
+
 	if(!extensions.empty())FileParser::filter_files_by_extension(filenames, extensions);
-	for(int j = 0; j < filenames.size(); j++) {
-		if(!FileParser::parse_file(filenames[j], index)) {
-			std::cerr << "Failed to open file \"" << filenames[j] << "\"" << std::endl;
+
+	if(thread_count == 0) {
+		std::cerr << "Unable to calculate core count \n";
+		for(int j = 0; j < filenames.size(); j++) {
+			if(!FileParser::parse_file(filenames[j], index)) {
+				std::cerr << "Failed to open file \"" << filenames[j] << "\"" << std::endl;
+			}
+		}
+		return true;
+	}
+
+	i = j = 0;
+	while(i < filenames.size()) {
+		filenameArray[j].push_back(&filenames[i]);
+		i++;
+		j++;
+		if(j >= thread_count) j = 0;
+	}
+
+	for(i = 0; i < thread_count; i++) {
+
+		// Using main index as well to reduce merging time
+		if(i < thread_count - 1) {
+			indexWorkers[i] = new std::thread(index_files, std::cref(filenameArray[i]), std::ref(indexArray[i]));
+		} else {
+			indexWorkers[i] = new std::thread(index_files, std::cref(filenameArray[i]), std::ref(index));
 		}
 	}
+
+	for(i = 0; i < thread_count; i++) {
+		indexWorkers[i]->join();
+		if(!index.merge(&indexArray[i])) {
+			std::cerr << "Could not merge indexes" << std::endl;
+		}
+	}
+
+	delete[] indexArray;
+	delete[] filenameArray;
+	delete[] indexWorkers;
+
 	return true;
 }
 
@@ -155,6 +236,17 @@ std::vector<std::string> sdindex::FileParser::split_string(const std::string& in
 	}
 
 	return fragments;
+}
+
+
+
+void sdindex::FileParser::index_files(const std::vector<std::string*>& filenames, IndexHashtable& index) {
+
+	for(int j = 0; j < filenames.size(); j++) {
+		if(!FileParser::parse_file(*filenames[j], index)) {
+			std::cerr << "Failed to open file \"" << filenames[j] << "\"" << std::endl;
+		}
+	}
 }
 
 
