@@ -16,13 +16,14 @@ EVT_DIRPICKER_CHANGED(1, on_dir_changed)
 EVT_BUTTON(2, on_load_clicked)
 EVT_BUTTON(3, on_save_clicked)
 EVT_BUTTON(4, on_clear_clicked)
-EVT_TOGGLEBUTTON(5, on_to_lowercase_clicked)
+EVT_TOGGLEBUTTON(5, on_case_clicked)
 EVT_TOGGLEBUTTON(6, on_ommit_numbers_clicked)
 EVT_TOGGLEBUTTON(7, on_ommit_special_clicked)
-EVT_TOGGLEBUTTON(9, on_extensions_clicked)
-EVT_BUTTON(11, on_query_clicked)
-EVT_BUTTON(12, on_copy_clicked)
-EVT_TEXT_ENTER(10, on_enter_pressed)
+EVT_TOGGLEBUTTON(8, on_subdirectories_clicked)
+EVT_TOGGLEBUTTON(10, on_extensions_clicked)
+EVT_TEXT_ENTER(12, on_enter_pressed)
+EVT_BUTTON(13, on_query_clicked)
+EVT_BUTTON(14, on_copy_clicked)
 wxEND_EVENT_TABLE()
 
 
@@ -30,7 +31,7 @@ wxEND_EVENT_TABLE()
 Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(980, 800)) {
 
 	wxPoint start(15, 15);
-	wxSize buttonsize(80, 30);
+	wxSize buttonsize(85, 30);
 	int  xgap = 15;
 	int ygap = 30;
 	wxSize dirSelectorSize(600, ygap);
@@ -43,7 +44,8 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 
 	itf.SetPointSize(12);
 
-	dirSelect = new wxDirPickerCtrl(this, 1, wxEmptyString, wxDirSelectorPromptStr, start, dirSelectorSize, wxDIRP_DEFAULT_STYLE);
+	dirSelect = new wxDirPickerCtrl(this, 1, wxEmptyString, wxDirSelectorPromptStr,
+		start, dirSelectorSize, wxDIRP_DEFAULT_STYLE);
 
 	dirSelect->GetTextCtrl()->SetEditable(false);
 
@@ -59,79 +61,87 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 		wxPoint(saveFileButton->GetPosition().x + buttonsize.x + xgap, start.y),
 		buttonsize);
 
-	toLowercaseToggleButton = new wxToggleButton(this, 5, wxString("all lowercase"),
+	caseToggleButton = new wxToggleButton(this, 5, wxString("Case"),
 		wxPoint(start.x, dirSelect->GetPosition().y + dirSelect->GetSize().y + ygap),
-		wxSize(buttonsize.x + 45, buttonsize.y));
+		buttonsize);
 
 	ommitNumbersToggleButton = new wxToggleButton(this, 6, wxString("Numbers"),
-		wxPoint(toLowercaseToggleButton->GetPosition().x +
-			toLowercaseToggleButton->GetSize().x + xgap,
-			toLowercaseToggleButton->GetPosition().y),
-		wxSize(buttonsize.x + 45, buttonsize.y));
+		wxPoint(caseToggleButton->GetPosition().x +
+			caseToggleButton->GetSize().x + xgap,
+			caseToggleButton->GetPosition().y),
+		buttonsize);
 
 	ommitSymbolsToggleButton = new wxToggleButton(this, 7, wxString("Symbols"),
 		wxPoint(ommitNumbersToggleButton->GetPosition().x +
 			ommitNumbersToggleButton->GetSize().x + xgap,
 			ommitNumbersToggleButton->GetPosition().y),
-		wxSize(buttonsize.x + 45, buttonsize.y));
+		buttonsize);
 
-	extensionsArea = new wxTextCtrl(this, 8, wxEmptyString,
-		wxPoint(ommitSymbolsToggleButton->GetPosition().x + ommitSymbolsToggleButton->GetSize().x + xgap,
-			ommitSymbolsToggleButton->GetPosition().y), wxSize(
-				dirSelectorSize.x - ommitSymbolsToggleButton->GetPosition().x - ommitSymbolsToggleButton->GetSize().x - xgap,
-				dirSelectorSize.y));
+	subdirectoriesToggleButton = new wxToggleButton(this, 8, wxString("Subdirs"),
+		wxPoint(ommitSymbolsToggleButton->GetPosition().x +
+			ommitSymbolsToggleButton->GetSize().x + xgap,
+			ommitSymbolsToggleButton->GetPosition().y),
+		buttonsize);
 
-	extensionsToggleButton = new wxToggleButton(this, 9, wxString("include"),
-		wxPoint(wxPoint(loadButton->GetPosition().x, toLowercaseToggleButton->GetPosition().y)),
+	extensionsArea = new wxTextCtrl(this, 9, wxEmptyString,
+		wxPoint(subdirectoriesToggleButton->GetPosition().x + subdirectoriesToggleButton->GetSize().x + xgap,
+			subdirectoriesToggleButton->GetPosition().y), wxSize(
+				dirSelectorSize.x - subdirectoriesToggleButton->GetPosition().x
+				- subdirectoriesToggleButton->GetSize().x - xgap, dirSelectorSize.y));
+
+	extensionsToggleButton = new wxToggleButton(this, 10, wxString("Include"),
+		wxPoint(wxPoint(loadButton->GetPosition().x, caseToggleButton->GetPosition().y)),
 		wxSize(buttonsize));;
 
-	instructions_text = new wxStaticText(this, 18, wxString("Select a directory to index"), wxPoint(saveFileButton->GetPosition().x,
-		extensionsToggleButton->GetPosition().y), wxSize(buttonsize.x * 2 + xgap, buttonsize.y + ygap));
+	instructions_text = new wxStaticText(this, 11, wxString("Select a directory to index"),
+		wxPoint(saveFileButton->GetPosition().x,
+			extensionsToggleButton->GetPosition().y), wxSize(buttonsize.x * 2 + xgap, buttonsize.y + ygap));
 
-	toLowercaseToggleButton->SetValue(toLowercase);
+	caseToggleButton->SetValue(!toLowercase);
 	ommitNumbersToggleButton->SetValue(!ommitNumbers);
 	ommitSymbolsToggleButton->SetValue(!ommitSpecialCharacters);
+	subdirectoriesToggleButton->SetValue(indexSubdirectories);
 	extensionsToggleButton->SetValue(extensionsInclude);
 
-	queryArea = new wxTextCtrl(this, 10, wxEmptyString,
-		wxPoint(start.x, toLowercaseToggleButton->GetPosition().y + toLowercaseToggleButton->GetSize().y + ygap),
+	queryArea = new wxTextCtrl(this, 12, wxEmptyString,
+		wxPoint(start.x, caseToggleButton->GetPosition().y + caseToggleButton->GetSize().y + ygap),
 		dirSelectorSize, wxTE_PROCESS_ENTER);
 
-	queryButton = new wxButton(this, 11, wxString("Query"),
+	queryButton = new wxButton(this, 13, wxString("Query"),
 		wxPoint(queryArea->GetPosition().x + queryArea->GetSize().x + xgap, queryArea->GetPosition().y),
 		buttonsize);
 
-	copyToClipboardButton = new wxButton(this, 12, wxString("Copy"),
+	copyToClipboardButton = new wxButton(this, 14, wxString("Copy"),
 		wxPoint(queryButton->GetPosition().x + queryButton->GetSize().x + xgap,
 			queryArea->GetPosition().y),
 		buttonsize);
 
-	resultsListArea = new wxListBox(this, 13,
+	resultsListArea = new wxListBox(this, 15,
 		wxPoint(start.x,
 			queryArea->GetPosition().y + queryArea->GetSize().y + ygap),
 		wxSize(dirSelectorSize.x, 600));
 
-	optionsText = new wxStaticText(this, 14, wxString("Options"), wxPoint(dirSelect->GetPosition().x,
+	optionsText = new wxStaticText(this, 16, wxString("Options"), wxPoint(dirSelect->GetPosition().x,
 		dirSelect->GetPosition().y + dirSelect->GetSize().y + 5), wxSize(buttonsize.x, buttonsize.y - 5));
 
-	extensionsText = new wxStaticText(this, 15, wxString("Extensions"), wxPoint(extensionsArea->GetPosition().x,
+	extensionsText = new wxStaticText(this, 17, wxString("Extensions"), wxPoint(extensionsArea->GetPosition().x,
 		dirSelect->GetPosition().y + dirSelect->GetSize().y + 5), wxSize(buttonsize.x, buttonsize.y - 5));
 
-	searchText = new wxStaticText(this, 16, wxString("Search"), wxPoint(toLowercaseToggleButton->GetPosition().x,
-		toLowercaseToggleButton->GetPosition().y + toLowercaseToggleButton->GetSize().y + 5), wxSize(buttonsize.x, buttonsize.y - 5));
+	searchText = new wxStaticText(this, 18, wxString("Search"), wxPoint(caseToggleButton->GetPosition().x,
+		caseToggleButton->GetPosition().y + caseToggleButton->GetSize().y + 5), wxSize(buttonsize.x, buttonsize.y - 5));
 
-	resultsText = new wxStaticText(this, 17, wxString("Results"), wxPoint(queryArea->GetPosition().x,
+	resultsText = new wxStaticText(this, 19, wxString("Results"), wxPoint(queryArea->GetPosition().x,
 		queryArea->GetPosition().y + queryArea->GetSize().y + 5), wxSize(buttonsize.x, buttonsize.y - 5));
-
 
 
 	dirSelect->SetFont(myf);
 	loadButton->SetFont(myf);
 	saveFileButton->SetFont(myf);
 	clearButton->SetFont(myf);
-	toLowercaseToggleButton->SetFont(myf);
+	caseToggleButton->SetFont(myf);
 	ommitNumbersToggleButton->SetFont(myf);
 	ommitSymbolsToggleButton->SetFont(myf);
+	subdirectoriesToggleButton->SetFont(myf);
 	extensionsArea->SetFont(myf);
 	extensionsToggleButton->SetFont(myf);
 	instructions_text->SetFont(itf);
@@ -148,27 +158,26 @@ Primary::Primary() : wxFrame(nullptr, 0, "SDIndex", wxDefaultPosition, wxSize(98
 	loadButton->SetToolTip("Load a previously saved index file");
 	saveFileButton->SetToolTip("Save index into a file");
 	clearButton->SetToolTip("Clears index and all fields");
-	toLowercaseToggleButton->SetToolTip("Choose whether to convert everything to lowercase");
+	caseToggleButton->SetToolTip("Choose whether to convert everything to lowercase");
 	ommitNumbersToggleButton->SetToolTip("Choose whether to ommit indexing numbers");
 	ommitSymbolsToggleButton->SetToolTip("Choose whether to ommit indexing symbols");
+	subdirectoriesToggleButton->SetToolTip("Select whether sub directories are indexed");
 	extensionsArea->SetToolTip("Type the extensions you want seperate with space \".txt .cpp\"");
 	extensionsToggleButton->SetToolTip("Choose whether to include files with set extensions or exclude them");
 	instructions_text->SetToolTip("Shows whether index has been loaded or not");
 	queryArea->SetToolTip("Type what you want to search for");
 	queryButton->SetToolTip("Click to search");
 	copyToClipboardButton->SetToolTip("Copy a selected result to clipboard");
-	resultsListArea->SetToolTip("Shows you the results");
+	resultsListArea->SetToolTip("Search results");
 
 
-
-	if(!toLowercase) toLowercaseToggleButton->SetFont(cbf);
+	if(toLowercase) caseToggleButton->SetFont(cbf);
 	if(ommitNumbers) ommitNumbersToggleButton->SetFont(cbf);
 	if(ommitSpecialCharacters) ommitSymbolsToggleButton->SetFont(cbf);
-	if(!extensionsInclude)extensionsToggleButton->SetLabel("exclude");
+	if(!indexSubdirectories) subdirectoriesToggleButton->SetFont(cbf);
+	if(!extensionsInclude)extensionsToggleButton->SetLabel("Exclude");
 
 	instructions_text->SetForegroundColour(wxColour(wxT("BLACK")));
-
-
 }
 
 
@@ -189,27 +198,33 @@ void Primary::on_dir_changed(wxFileDirPickerEvent& evt) {
 	std::string directory;
 	std::vector < std::string > filenames;
 
-	//if(!wxDirExists(dirSelect->GetPath()))return;
+	if(!wxDirExists(dirSelect->GetPath()))return;
 
 	directory = dirSelect->GetPath().ToStdString();
 
 	if(indexing) return;
 	indexing = true;
 
-	instructions_text->SetLabel("Indexing...");
-	instructions_text->SetForegroundColour(wxColor(204, 102, 0));
-
 	if(directory.empty()) {
 		wxMessageDialog dlg(this, "Please select a directory");
 		dlg.ShowModal();
 		evt.Skip();
+		indexing = false;
 		return;
 	}
+
+	instructions_text->SetLabel("Indexing...");
+	instructions_text->SetForegroundColour(wxColor(204, 102, 0));
 
 	FileParser::allowExtensions = extensionsInclude;
 	std::string extString = std::string(extensionsArea->GetLineText(0));
 	extensions = FileParser::split_string(extString, ' ');
-	hasLoadedIndex = FileParser::index_directory_and_subdirectories(directory, hashtable, extensions);
+
+	if(indexSubdirectories) {
+		hasLoadedIndex = FileParser::index_directory_and_subdirectories(directory, hashtable, extensions);
+	} else {
+		hasLoadedIndex = FileParser::index_directory(directory, hashtable, extensions);
+	}
 
 	indexing = false;
 
@@ -245,6 +260,7 @@ void Primary::on_load_clicked(wxCommandEvent& evt) {
 		wxMessageDialog dlg(this, "Could not load file");
 		dlg.ShowModal();
 		evt.Skip();
+		indexing = false;
 		return;
 	}
 
@@ -302,15 +318,16 @@ void sdindex::Primary::on_clear_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_to_lowercase_clicked(wxCommandEvent& evt) {
+void sdindex::Primary::on_case_clicked(wxCommandEvent& evt) {
 
 	wxFont cbf = get_font1();
 
+	toLowercase = !toLowercase;
 	if(toLowercase) {
 		cbf.SetStrikethrough(true);
 	}
-	toLowercaseToggleButton->SetFont(cbf);
-	toLowercase = !toLowercase;
+	caseToggleButton->SetFont(cbf);
+
 	evt.Skip();
 }
 
@@ -320,11 +337,12 @@ void sdindex::Primary::on_ommit_numbers_clicked(wxCommandEvent& evt) {
 
 	wxFont cbf = get_font1();
 
-	if(!ommitNumbers) {
+	ommitNumbers = !ommitNumbers;
+	if(ommitNumbers) {
 		cbf.SetStrikethrough(true);
 	}
 	ommitNumbersToggleButton->SetFont(cbf);
-	ommitNumbers = !ommitNumbers;
+
 	evt.Skip();
 }
 
@@ -334,21 +352,39 @@ void sdindex::Primary::on_ommit_special_clicked(wxCommandEvent& evt) {
 
 	wxFont cbf = get_font1();
 
-	if(!ommitSpecialCharacters) {
+	ommitSpecialCharacters = !ommitSpecialCharacters;
+	if(ommitSpecialCharacters) {
 		cbf.SetStrikethrough(true);
 	}
 	ommitSymbolsToggleButton->SetFont(cbf);
-	ommitSpecialCharacters = !ommitSpecialCharacters;
+
 	evt.Skip();
 }
+
+
+
+void sdindex::Primary::on_subdirectories_clicked(wxCommandEvent& evt) {
+
+	wxFont cbf = get_font1();
+
+	indexSubdirectories = !indexSubdirectories;
+	if(!indexSubdirectories) {
+		cbf.SetStrikethrough(true);
+	}
+	subdirectoriesToggleButton->SetFont(cbf);
+
+	evt.Skip();
+}
+
+
 
 void sdindex::Primary::on_extensions_clicked(wxCommandEvent& evt) {
 
 	if(extensionsToggleButton->GetValue()) {
-		extensionsToggleButton->SetLabel("include");
+		extensionsToggleButton->SetLabel("Include");
 		extensionsInclude = true;
 	} else {
-		extensionsToggleButton->SetLabel("exclude");
+		extensionsToggleButton->SetLabel("Exclude");
 		extensionsInclude = false;
 	}
 	evt.Skip();
@@ -434,14 +470,11 @@ void sdindex::Primary::on_enter_pressed(wxCommandEvent& evt) {
 
 
 
-
-
-
 void Primary::OnSize(wxSizeEvent& event) {
 
 	int xgap = 15;
 
-	dirSelect->SetSize(wxSize(this->GetSize().x - 330, dirSelect->GetSize().y));
+	dirSelect->SetSize(wxSize(this->GetSize().x - 345, dirSelect->GetSize().y));
 
 	loadButton->SetPosition(
 		wxPoint(dirSelect->GetPosition().x + dirSelect->GetSize().x + xgap,
@@ -455,14 +488,14 @@ void Primary::OnSize(wxSizeEvent& event) {
 		wxPoint(saveFileButton->GetPosition().x + saveFileButton->GetSize().x + xgap,
 			clearButton->GetPosition().y));
 
-	extensionsArea->SetSize(wxSize(dirSelect->GetSize().x - ommitSymbolsToggleButton->GetPosition().x - ommitSymbolsToggleButton->GetSize().x,
-		dirSelect->GetSize().y));
+	extensionsArea->SetSize(wxSize(dirSelect->GetSize().x - subdirectoriesToggleButton->GetPosition().x
+		- subdirectoriesToggleButton->GetSize().x, dirSelect->GetSize().y));
 
-	extensionsToggleButton->SetPosition(wxPoint(loadButton->GetPosition().x, toLowercaseToggleButton->GetPosition().y));
+	extensionsToggleButton->SetPosition(wxPoint(loadButton->GetPosition().x,
+		caseToggleButton->GetPosition().y));
 
-
-	instructions_text->SetPosition(wxPoint(saveFileButton->GetPosition().x, extensionsToggleButton->GetPosition().y));
-
+	instructions_text->SetPosition(wxPoint(saveFileButton->GetPosition().x,
+		extensionsToggleButton->GetPosition().y));
 
 	queryArea->SetSize(wxSize(dirSelect->GetSize()));
 
@@ -478,7 +511,6 @@ void Primary::OnSize(wxSizeEvent& event) {
 		wxSize(this->GetSize().x - 45,
 			this->GetSize().y - resultsListArea->GetPosition().y - 55));
 
-
-
-	//event.Skip();
+	// Refreshes the window to remove artifacts from resizing
+	Refresh();
 }

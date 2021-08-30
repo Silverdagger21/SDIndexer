@@ -6,9 +6,8 @@ using namespace sdindex;
 
 IndexHashtable::IndexHashtable(int size) {
 
-	this->hashtable = new IndexHashtableEntry * [size];
 	this->size = size;
-
+	this->hashtable = new IndexHashtableEntry * [size];
 	for(int i = 0; i < size; i++) {
 		this->hashtable[i] = nullptr;
 	}
@@ -20,6 +19,10 @@ sdindex::IndexHashtable::~IndexHashtable() {
 
 	clear();
 	delete hashtable;
+}
+
+int sdindex::IndexHashtable::get_size() {
+	return size;
 }
 
 
@@ -180,7 +183,8 @@ void sdindex::IndexHashtable::clear() {
 
 void sdindex::IndexHashtable::steal_occurences(IndexHashtable* otherIndex) {
 	
-	unsigned int i, hashv;
+	unsigned int hashv;
+	int i;
 	IndexHashtableEntry* entry = nullptr;
 	IndexHashtableEntry* thisEntry = nullptr;
 	OccurenceNode* occurence = nullptr;
@@ -247,7 +251,7 @@ bool sdindex::IndexHashtable::merge(IndexHashtable* otherIndex) {
 	IndexHashtableEntry* otherEntry = nullptr;
 	IndexHashtableEntry* thisEntry = nullptr;
 	OccurenceNode* thisOccurence = nullptr;
-	unsigned int i;
+	int i;
 
 	if(size != otherIndex->size)return false;
 

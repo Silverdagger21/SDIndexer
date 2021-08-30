@@ -5,20 +5,37 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <thread>
+#include <chrono>
 
 
 //#define BUFFERED_IO
 
 #ifndef BUFFERED_IO
+
 #ifdef _WIN64 
 #include <conio.h>
 #endif
+
+#ifdef __linux__
+#define BUFFERED_IO
 #endif
+
+#ifdef __unix__
+#define BUFFERED_IO
+#endif
+
+#ifdef __apple__
+#define BUFFERED_IO
+#endif
+
+#endif
+
 
 using namespace sdindex;
 
 
-// Initializing core objects
+// Initializing core vars & objects
 
 const int hashtableSize = 100000;
 IndexHashtable index(hashtableSize);
@@ -29,6 +46,7 @@ std::string input;
 std::vector<std::string> extensions;
 bool application_loop = true;
 bool hasIndex = false;
+bool indexSubDirectories = true;
 
 
 // Handles command line argument input
@@ -37,6 +55,9 @@ void parse_arguments(int argc, char* argv[]);
 // Receives input from the user based on the platform
 // retrieves a single letter from the keyboard without pressing enter (if BUFFERED_IO is not defined)
 char get_input();
+
+// Prints indexing and stops when "stop" is true
+void print_and_refresh(volatile bool& stop);
 
 // First menu
 void initial_menu();
@@ -62,7 +83,6 @@ int main(int argc, char* argv[]) {
 	queryManager.convertToLowercase = true;
 	queryManager.ommitNumbers = true;
 	queryManager.ommitSpecialCharacters = true;
-
 
 	// Parse command line arguments first
 	if(argc > 1) {
@@ -111,13 +131,21 @@ void parse_arguments(int argc, char* argv[]) {
 			FileParser::ommitSpecialCharacters = true;
 			queryManager.ommitSpecialCharacters = true;
 
-			// allow only documents with certain extensions
+			// Allow only documents with certain extensions
 		} else if(cla == "-ae") {
 			FileParser::allowExtensions = true;
 
-			// allow all documents except the ones with certain extensions
+			// Allow all documents except the ones with certain extensions
 		} else if(cla == "-nae") {
 			FileParser::allowExtensions = false;
+
+			// Index sub directories
+		} else if(cla == "-sd") {
+			indexSubDirectories = true;
+
+			// Do not index sub directories
+		} else if(cla == "-nsd") {
+			indexSubDirectories = false;
 
 			// Set extensions
 		} else if(cla == "-ext") {
@@ -143,7 +171,11 @@ void parse_arguments(int argc, char* argv[]) {
 			i++;
 			if(i < argc) {
 				dirpath = argv[i];
-				hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+				if(indexSubDirectories) {
+					hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+				} else {
+					hasIndex = FileParser::index_directory(dirpath, index, extensions);
+				}
 
 			} else {
 				std::cout << "Path not specified correctly after option -sd\n";
@@ -217,22 +249,35 @@ char get_input() {
 #endif
 
 #ifndef BUFFERED_IO
-
 #ifdef _WIN64 
 	c = _getch();
 #endif
-
-#ifdef __linux__
-	std::string inp;
-	std::getline(std::cin, inp);
-	c = inp[0];
-#endif
-
 #endif
 
 	return c;
 }
 
+
+
+void print_and_refresh(volatile bool& stop) {
+
+	std::cout << "Indexing...";
+	while(!stop) {
+		std::cout << "\b\b\b   \b\b\b";
+		if(stop)return;
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::cout << ".";
+		if(stop)return;
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::cout << ".";
+		if(stop)return;
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::cout << ".";
+		if(stop)return;
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	}
+	std::cout << std::endl;
+}
 
 
 
@@ -254,6 +299,7 @@ void load_directory() {
 void initial_menu() {
 
 	char c = ' ';
+	volatile bool stop = false;
 
 	std::cout << "Options: 'd' select a directory to index | "
 		<< "'l' load the index from a file | "
@@ -267,7 +313,19 @@ void initial_menu() {
 	case 'd':
 		std::cout << "Enter the directory you wish to index\n";
 		std::getline(std::cin, dirpath);
-		hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+		if(indexSubDirectories) {
+			stop = false;
+			std::thread idx(print_and_refresh, std::ref(stop));
+			hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+			stop = true;
+			idx.join();
+		} else {
+			stop = false;
+			std::thread idx(print_and_refresh, std::ref(stop));
+			hasIndex = FileParser::index_directory(dirpath, index, extensions);
+			stop = true;
+			idx.join();
+		}
 		break;
 
 	case 'l':
@@ -296,6 +354,7 @@ void initial_menu() {
 void main_menu() {
 
 	char c = ' ';
+	volatile bool stop = false;
 
 	std::cout << "Options: 'd' select a directory to add to index | "
 		<< "'q' query | "
@@ -309,9 +368,26 @@ void main_menu() {
 		std::cout << "Enter the directory you wish to index\n";
 		std::getline(std::cin, dirpath);
 		if(!hasIndex) {
-			hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+			if(indexSubDirectories) {
+				stop = false;
+				std::thread idx(print_and_refresh, std::ref(stop));
+				hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+				stop = true;
+				idx.join();
+			} else {
+				stop = false;
+				std::thread idx(print_and_refresh, std::ref(stop));
+				hasIndex = FileParser::index_directory(dirpath, index, extensions);
+				stop = true;
+				idx.join();
+			}
+
 		} else {
-			FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+			if(indexSubDirectories) {
+				FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
+			} else {
+				FileParser::index_directory(dirpath, index, extensions);
+			}
 		}
 		break;
 
@@ -348,6 +424,7 @@ void options_menu() {
 		std::cout << "Change: 't' convert to lowercase : " << std::boolalpha << FileParser::toLowercase << " | "
 			<< "'n' ommit numbers : " << FileParser::ommitNumbers << " | "
 			<< "'s' ommit symbols : " << FileParser::ommitSpecialCharacters << " | "
+			<< "'d' index sub directories : " << indexSubDirectories << " | "
 			<< "'x' index only certain files by extension : " << FileParser::allowExtensions << " | "
 			<< "'p' previous menu \n";
 
@@ -367,6 +444,10 @@ void options_menu() {
 		case 's':
 			FileParser::ommitSpecialCharacters = !FileParser::ommitSpecialCharacters;
 			queryManager.ommitSpecialCharacters = !queryManager.ommitSpecialCharacters;
+			break;
+
+		case 'd':
+			indexSubDirectories = !indexSubDirectories;
 			break;
 
 		case 'x':

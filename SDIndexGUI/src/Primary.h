@@ -44,6 +44,7 @@ namespace sdindex {
 		bool toLowercase = true;
 		bool ommitNumbers = true;
 		bool ommitSpecialCharacters = true;
+		bool indexSubdirectories = true;
 		bool extensionsInclude = true;
 
 
@@ -79,7 +80,7 @@ namespace sdindex {
 
 
 		// Togglebutton enabling the user to determine whether to convert all characters to lowercase for ease or not
-		wxToggleButton* toLowercaseToggleButton = nullptr;
+		wxToggleButton* caseToggleButton = nullptr;
 
 
 		// Togglebutton enabling the user to determine whether to ommit numbers or not
@@ -88,6 +89,10 @@ namespace sdindex {
 
 		// Togglebutton enabling the user to determine whether to ommit special characters or not
 		wxToggleButton* ommitSymbolsToggleButton = nullptr;
+
+
+		// Togglebutton enabling the user to determine whether to index sub directories
+		wxToggleButton* subdirectoriesToggleButton = nullptr;
 
 
 		// Textarea widget enabling the user to type what they want to search for
@@ -136,7 +141,7 @@ namespace sdindex {
 
 
 		// Handles updating the options and the UI when the "to lowercase" togglebutton is clicked
-		void on_to_lowercase_clicked(wxCommandEvent& evt);
+		void on_case_clicked(wxCommandEvent& evt);
 
 
 		// Handles updating the options and the UI when the "numbers" togglebutton is clicked
@@ -146,6 +151,9 @@ namespace sdindex {
 		// Handles updating the options and the UI when the "symbols" togglebutton is clicked
 		void on_ommit_special_clicked(wxCommandEvent& evt);
 
+
+		// Handles updating the options and the UI when the "Subdirs" togglebutton is clicked
+		void on_subdirectories_clicked(wxCommandEvent& evt);
 
 		// Handles updating the options and the UI when the "to lowercase" togglebutton is clicked
 		void on_extensions_clicked(wxCommandEvent& evt);

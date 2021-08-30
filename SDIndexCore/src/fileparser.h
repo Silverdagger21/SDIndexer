@@ -21,11 +21,14 @@ namespace sdindex {
 		static bool allowExtensions;
 
 
-		// Goes through all the files in the specified directory and sub directories and indexes the contents
-		static bool index_directory_and_subdirectories(const std::string& dirpath, IndexHashtable& index);
+
 
 		// Goes through all the files in the specified directory and sub directories and indexes the contents
 		static bool index_directory_and_subdirectories(const std::string& dirpath, IndexHashtable& index, const std::vector<std::string>& extensions);
+
+
+		// Goes through all the files in the specified directory and indexes the contents
+		static bool index_directory(const std::string& dirpath, IndexHashtable& index, const std::vector<std::string>& extensions);
 
 
 		// Parses the file specified in "filename" and populates the index
@@ -38,6 +41,10 @@ namespace sdindex {
 
 		// Returns a vector containing the paths of all files in the current and sub directories
 		static std::vector<std::string> get_filenames_from_directories(const std::string& path);
+
+
+		// Returns a vector containing the paths of all files in the current directory
+		static std::vector<std::string> get_filenames_from_directory(const std::string& path);
 
 
 		// Converts the specifiec string into only lowercase characters

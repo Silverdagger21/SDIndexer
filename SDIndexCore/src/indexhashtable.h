@@ -13,11 +13,12 @@ namespace sdindex {
 
 
 		IndexHashtableEntry** hashtable = nullptr;
-		int size;
+		
 
 		IndexHashtable(int size = 100000);
 		~IndexHashtable();
 
+		int get_size();
 
 		// Adds the specified string to the index
 		bool add_to_index(const std::string& word, const std::string& filename);
@@ -43,11 +44,11 @@ namespace sdindex {
 		void clear();
 
 
-		// Takes all the occurences from the otherIndex
+		// Takes all the occurences from the otherIndex (slow impl)
 		void steal_occurences(IndexHashtable* otherIndex);
 
 
-		//
+		// Merges index with otherIndex (delete otherIndex after using merge)
 		bool merge(IndexHashtable* otherIndex);
 
 
@@ -58,6 +59,7 @@ namespace sdindex {
 
 		protected:
 
+		int size;
 
 		// The hashfunction used to match words to hashvalues
 		unsigned int hashfunction(const std::string& word);
