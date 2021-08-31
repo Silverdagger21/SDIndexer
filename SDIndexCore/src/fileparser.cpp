@@ -188,6 +188,14 @@ bool FileParser::parse_file(const std::string& filename, IndexHashtable& index) 
 	infile.open(filename, std::ios::in);
 
 	if(infile.is_open()) {
+
+		//Split filename from path and parse it first
+		line = std::filesystem::path(filename).filename().stem().string();
+		if(!parse_line(line, index, filename)) {
+			infile.close();
+			return false;
+		}
+
 		while(std::getline(infile, line)) {
 			if(!parse_line(line, index, filename)) {
 				infile.close();
