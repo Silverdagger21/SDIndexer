@@ -15,7 +15,7 @@ IndexHashtable::IndexHashtable(int size) {
 
 
 
-sdindex::IndexHashtable::~IndexHashtable() {
+IndexHashtable::~IndexHashtable() {
 
 	clear();
 	delete hashtable;
@@ -29,6 +29,20 @@ int sdindex::IndexHashtable::get_size() {
 
 bool IndexHashtable::add_to_index(const std::string& word, const std::string& filename) {
 
+	int filenameIndex = -1;
+
+	filenameIndex = get_filename_index(filename);
+	if(filenameIndex == -1) {
+		filenameIndex = static_cast<int>(filenames.size());
+		filenames.push_back(filename);
+	}
+	return add_to_index(word, filenameIndex);
+}
+
+
+
+bool IndexHashtable::add_to_index(const std::string& word, int filenameIndex) {
+
 	IndexHashtableEntry* entry;
 	bool status = false;
 	unsigned int hashvalue;
@@ -39,7 +53,8 @@ bool IndexHashtable::add_to_index(const std::string& word, const std::string& fi
 		entry = new IndexHashtableEntry(word);
 		entry->set_next(nullptr);
 		OccurenceNode* ocnp = new OccurenceNode;
-		ocnp->filename = filename;
+
+		ocnp->filenameIndex = filenameIndex;
 		ocnp->next = nullptr;
 		ocnp->occurences = 1;
 		entry->add_occurence(ocnp);
@@ -52,7 +67,7 @@ bool IndexHashtable::add_to_index(const std::string& word, const std::string& fi
 		}
 		if(entry != nullptr) {
 			OccurenceNode* ocnp = entry->get_occurances();
-			while(ocnp != nullptr && ocnp->filename != filename) {
+			while(ocnp != nullptr && ocnp->filenameIndex != filenameIndex) {
 				ocnp = ocnp->next;
 			}
 			if(ocnp != nullptr) {
@@ -60,7 +75,7 @@ bool IndexHashtable::add_to_index(const std::string& word, const std::string& fi
 				status = true;
 			} else {
 				ocnp = new OccurenceNode;
-				ocnp->filename = filename;
+				ocnp->filenameIndex = filenameIndex;
 				ocnp->occurences = 1;
 				entry->add_occurence(ocnp);
 				status = true;
@@ -69,7 +84,7 @@ bool IndexHashtable::add_to_index(const std::string& word, const std::string& fi
 			entry = new IndexHashtableEntry(word);
 			entry->set_next(hashtable[hashvalue]);
 			OccurenceNode* ocnp = new OccurenceNode;
-			ocnp->filename = filename;
+			ocnp->filenameIndex = filenameIndex;
 			ocnp->next = nullptr;
 			ocnp->occurences = 1;
 			entry->add_occurence(ocnp);
@@ -82,7 +97,7 @@ bool IndexHashtable::add_to_index(const std::string& word, const std::string& fi
 
 
 
-bool sdindex::IndexHashtable::entry_exists(const std::string& word) {
+bool IndexHashtable::entry_exists(const std::string& word) {
 
 	IndexHashtableEntry* entry = nullptr;
 
@@ -94,7 +109,16 @@ bool sdindex::IndexHashtable::entry_exists(const std::string& word) {
 
 
 
-IndexHashtableEntry* sdindex::IndexHashtable::get_entry_copy(const std::string& word) {
+std::string IndexHashtable::get_filename(int index) {
+
+	if(!(index < filenames.size())) {
+		return std::string();
+	}
+
+	return filenames[index];
+}
+
+IndexHashtableEntry* IndexHashtable::get_entry_copy(const std::string& word) {
 
 	IndexHashtableEntry* entryptr;
 
@@ -109,7 +133,7 @@ IndexHashtableEntry* sdindex::IndexHashtable::get_entry_copy(const std::string& 
 
 
 
-IndexHashtableEntry* sdindex::IndexHashtable::get_entry(const std::string& word) {
+IndexHashtableEntry* IndexHashtable::get_entry(const std::string& word) {
 
 	IndexHashtableEntry* entry = nullptr;
 	unsigned int hashvalue;
@@ -160,9 +184,14 @@ bool IndexHashtable::load_entry(const std::string& id, const std::string& word, 
 	return true;
 }
 
+void IndexHashtable::load_filename_entry(const std::string& filename) {
+
+	filenames.push_back(filename);
+}
 
 
-void sdindex::IndexHashtable::clear() {
+
+void IndexHashtable::clear() {
 
 	IndexHashtableEntry* entry;
 	IndexHashtableEntry* pentry;
@@ -177,87 +206,45 @@ void sdindex::IndexHashtable::clear() {
 		}
 		hashtable[i] = nullptr;
 	}
+
+	filenames.clear();
 }
 
 
 
-void sdindex::IndexHashtable::steal_occurences(IndexHashtable* otherIndex) {
-	
-	unsigned int hashv;
-	int i;
-	IndexHashtableEntry* entry = nullptr;
-	IndexHashtableEntry* thisEntry = nullptr;
-	OccurenceNode* occurence = nullptr;
-	OccurenceNode* nextOccurence = nullptr;
-
-	// Loops over otherIndex hashtable
-	for(i = 0; i < otherIndex->size; i++) {
-
-		// If a chain exists in otherIndex
-		if(otherIndex->hashtable[i] != nullptr) {
-			entry = otherIndex->hashtable[i];
-
-			//Loops over hashtable entry chains
-			while(entry != nullptr) {
-				hashv = hashfunction(entry->value);
-
-				// If a chain exists in this index
-				if(hashtable[hashv] != nullptr) {
-					thisEntry = hashtable[hashv];
-
-					// Loops over this hashtable chain
-					while(thisEntry != nullptr) {
-						if(thisEntry->value == entry->value) {
-							occurence = entry->occurences;
-							entry->occurences = nullptr;
-							nextOccurence = occurence->next;
-
-							// Loop over occurences and add them
-							while(nextOccurence != nullptr) {
-								thisEntry->add_occurence(occurence);
-								occurence = nextOccurence;
-								nextOccurence = nextOccurence->next;
-							}
-							thisEntry->add_occurence(occurence);
-							break;
-						}
-						thisEntry = thisEntry->get_next();
-					}
-
-					// If the entry did not match on the chain
-					if(thisEntry == nullptr) {
-						thisEntry = new IndexHashtableEntry(entry->value);
-						thisEntry->set_next(hashtable[hashv]);
-						hashtable[hashv] = thisEntry;
-						thisEntry->occurences = entry->occurences;
-						entry->occurences = nullptr;	
-					}
-
-					// If a chain does not exist in this index
-				} else {
-					hashtable[hashv] = new IndexHashtableEntry(entry->value);
-					hashtable[hashv]->next = nullptr;
-					hashtable[hashv]->occurences = entry->occurences;
-					entry->occurences = nullptr;
-				}
-				entry = entry->get_next();
-			}
-		}
-	}
-}
-
-bool sdindex::IndexHashtable::merge(IndexHashtable* otherIndex) {
+bool IndexHashtable::merge(IndexHashtable* otherIndex) {
 
 	IndexHashtableEntry* otherEntry = nullptr;
 	IndexHashtableEntry* thisEntry = nullptr;
 	OccurenceNode* thisOccurence = nullptr;
+	int oldFilenamesSize;
 	int i;
 
 	if(size != otherIndex->size)return false;
 
+	oldFilenamesSize = static_cast<int> (filenames.size());
+
+	// Get all other filenames (always different unless we index the same directory twice)
+	for(i = 0; i < otherIndex->filenames.size(); i++) {
+		filenames.push_back(otherIndex->filenames[i]);
+	}
+
+	// Increase all filenameIndexes by size
+	for(i = 0; i < size; i++) {
+		otherEntry = otherIndex->hashtable[i];
+		while(otherEntry != nullptr) {
+			thisOccurence = otherEntry->get_occurances();
+			while(thisOccurence != nullptr) {
+				thisOccurence->filenameIndex = thisOccurence->filenameIndex + oldFilenamesSize;
+				thisOccurence = thisOccurence->next;
+			}
+			otherEntry = otherEntry->next;
+		}
+	}
+
 	// Iterates over all the hashtable slots
 	for(i = 0; i < size; i++) {
-		
+
 		// If the slot is empty grab the entry chain
 		if(hashtable[i] == nullptr) {
 			hashtable[i] = otherIndex->hashtable[i];
@@ -295,11 +282,26 @@ bool sdindex::IndexHashtable::merge(IndexHashtable* otherIndex) {
 					otherIndex->hashtable[i]->next = hashtable[i];
 					hashtable[i] = otherIndex->hashtable[i];
 					otherIndex->hashtable[i] = otherEntry;
-				} 
-			}	
+				}
+			}
 		}
 	}
 	return true;
+}
+
+
+
+int IndexHashtable::get_filename_index(const std::string& filename) {
+
+	int i;
+
+	for(i = 0; i < filenames.size(); i++) {
+		if(filename == filenames[i]) return i;
+	}
+
+	if(i == filenames.size())filenames.push_back(filename);
+
+	return i;
 }
 
 
@@ -319,8 +321,9 @@ std::string IndexHashtable::to_string() {
 
 	std::string data;
 	IndexHashtableEntry* ihe = nullptr;
+	int i;
 
-	for(int i = 0; i < this->size; i++) {
+	for(i = 0; i < this->size; i++) {
 		if(hashtable[i] != nullptr) {
 			ihe = hashtable[i];
 			data.append(std::to_string(i) + "\n");
@@ -334,5 +337,11 @@ std::string IndexHashtable::to_string() {
 
 		}
 	}
+
+	data.append("Filenames:\n");
+	for(i = 0; i < filenames.size(); i++) {
+		data.append(filenames[i] + "\n");
+	}
+
 	return data;
 }

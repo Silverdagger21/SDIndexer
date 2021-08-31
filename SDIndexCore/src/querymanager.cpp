@@ -126,7 +126,7 @@ void QueryManager::merge_occurences_to_ranked_documents(std::vector<IndexHashtab
 		ocnp = entries->at(i)->get_occurances();
 		while(ocnp != nullptr) {
 			for(j = 0; j < rankedDocuments.size(); j++) {
-				if(ocnp->filename == rankedDocuments[j].filename) {
+				if(ocnp->filenameIndex == rankedDocuments[j].filenameIndex) {
 					rankedDocuments[j].count += 1;
 					if(common) {
 						rankedDocuments[j].score += (ocnp->occurences / 0.5f);
@@ -140,7 +140,7 @@ void QueryManager::merge_occurences_to_ranked_documents(std::vector<IndexHashtab
 			if(j >= rankedDocuments.size()) {
 				RankedDocument rd;
 				rd.count = 1;
-				rd.filename = ocnp->filename;
+				rd.filenameIndex = ocnp->filenameIndex;
 				rd.score = ocnp->occurences;
 				rankedDocuments.push_back(rd);
 			}
@@ -181,5 +181,11 @@ void QueryManager::direct_match(const std::string& query) {
 	std::sort(rankedDocuments.begin(), rankedDocuments.end(), [](const RankedDocument& left, const RankedDocument& right) {
 		return left.score > right.score;
 	});
+
+
+	// Assign names to documents
+	for(i = 0; i < rankedDocuments.size(); i++) {
+		rankedDocuments[i].filename = index->get_filename(rankedDocuments[i].filenameIndex);
+	}
 
 }

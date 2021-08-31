@@ -100,7 +100,7 @@ IndexHashtableEntry* IndexHashtableEntry::clone_entry() {
 
 
 void IndexHashtableEntry::load_occurences(const std::string& occurences) {
-
+	
 	OccurenceNode* onp;
 	std::string filename;
 	std::string appearances;
@@ -110,7 +110,7 @@ void IndexHashtableEntry::load_occurences(const std::string& occurences) {
 		if(occurences[i] == ';') {
 			if(flag) {
 				onp = new OccurenceNode;
-				onp->filename = filename;
+				onp->filenameIndex = std::stoi(filename);
 				onp->occurences = std::stoi(appearances);
 				this->add_occurence(onp);
 				filename.clear();
@@ -125,9 +125,10 @@ void IndexHashtableEntry::load_occurences(const std::string& occurences) {
 	}
 
 	onp = new OccurenceNode;
-	onp->filename = filename;
+	onp->filenameIndex = std::stoi(filename);
 	onp->occurences = std::stoi(appearances);
 	this->add_occurence(onp);
+	
 }
 
 
@@ -138,10 +139,10 @@ std::string IndexHashtableEntry::to_string() {
 	OccurenceNode* ocnp;
 	data.append(this->value + "\n");
 	ocnp = this->get_occurances();
-	data.append(ocnp->filename + ";" + std::to_string(ocnp->occurences));
+	data.append(std::to_string(ocnp->filenameIndex) + ";" + std::to_string(ocnp->occurences));
 	ocnp = ocnp->next;
 	while(ocnp != nullptr) {
-		data.append(";" + ocnp->filename + ";" + std::to_string(ocnp->occurences));
+		data.append(";" + std::to_string(ocnp->filenameIndex) + ";" + std::to_string(ocnp->occurences));
 		ocnp = ocnp->next;
 	}
 	return data;

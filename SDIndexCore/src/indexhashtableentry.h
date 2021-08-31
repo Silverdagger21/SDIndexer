@@ -6,7 +6,7 @@ namespace sdindex {
 
 	//A representation of how many times a word occured and at which file
 	typedef struct OccurenceNode {
-		std::string filename;
+		int  filenameIndex = -1;
 		int occurences = 0;
 		struct OccurenceNode* next = nullptr;
 	}OccurenceNode;

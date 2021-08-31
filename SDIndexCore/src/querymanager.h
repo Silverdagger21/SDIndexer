@@ -12,6 +12,7 @@ namespace sdindex {
 	// Struct representing documents paired with a score and appearance count
 	typedef struct RankedDocument {
 		std::string filename;
+		int filenameIndex = -1;
 		double score = 0;
 		int count = 0;
 	}RankedDocument;

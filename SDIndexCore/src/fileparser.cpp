@@ -184,20 +184,24 @@ bool FileParser::parse_file(const std::string& filename, IndexHashtable& index) 
 
 	std::ifstream infile;
 	std::string line;
+	int filenameIndex;
 
 	infile.open(filename, std::ios::in);
 
 	if(infile.is_open()) {
 
+		//Calculate index to make adding faster
+		filenameIndex = index.get_filename_index(filename);
+
 		//Split filename from path and parse it first
 		line = std::filesystem::path(filename).filename().stem().string();
-		if(!parse_line(line, index, filename)) {
+		if(!parse_line(line, index, filenameIndex)) {
 			infile.close();
 			return false;
 		}
 
 		while(std::getline(infile, line)) {
-			if(!parse_line(line, index, filename)) {
+			if(!parse_line(line, index, filenameIndex)) {
 				infile.close();
 				return false;
 			}
@@ -214,7 +218,7 @@ bool FileParser::parse_file(const std::string& filename, IndexHashtable& index) 
 
 
 
-bool FileParser::parse_line(const std::string& line, IndexHashtable& index, const std::string& filename) {
+bool FileParser::parse_line(const std::string& line, IndexHashtable& index, const int filenameIndex) {
 
 	std::string word;
 	bool status = false;
@@ -231,7 +235,7 @@ bool FileParser::parse_line(const std::string& line, IndexHashtable& index, cons
 		} else {
 			parse_word(word, toLowercase, ommitNumbers, ommitSpecialCharacters);
 			if(!word.empty()) {
-				status = index.add_to_index(word, filename);
+				status = index.add_to_index(word, filenameIndex);
 				if(!status) std::cerr << "Problem inputing word into the hashtable" << std::endl;
 			}
 			word.clear();
@@ -241,7 +245,7 @@ bool FileParser::parse_line(const std::string& line, IndexHashtable& index, cons
 	if(word.length() > 0) {
 		parse_word(word, toLowercase, ommitNumbers, ommitSpecialCharacters);
 		if(!word.empty()) {
-			status = index.add_to_index(word, filename);
+			status = index.add_to_index(word, filenameIndex);
 			if(!status) std::cerr << "Problem inputing word into the hashtable" << std::endl;
 		}
 		word.clear();
@@ -426,27 +430,12 @@ void FileParser::filter_files_by_extension(std::vector<std::string>& filenames,
 				}
 			}
 		}
-
 	}
 }
 
 
 
 sdindex::FileParser::FileParser() {}
-
-
-
-bool FileParser::file_exists(const std::string& filename) {
-
-	std::ifstream ifs;
-
-	ifs.open(filename);
-	if(ifs.is_open()) {
-		ifs.close();
-		return true;
-	}
-	return false;
-}
 
 
 
@@ -462,11 +451,17 @@ bool FileParser::load_index_file(const std::string& filename, IndexHashtable& in
 
 	if(ifs.is_open()) {
 		while(std::getline(ifs, line)) {
+
+
 			switch(state) {
 			case 0:
 				if(line != "-1") {
 					id.clear();
 					id = line;
+					if(line == "Filenames:") {
+						state = 4;
+						break;
+					}
 				}
 				state++;
 				break;
@@ -483,6 +478,9 @@ bool FileParser::load_index_file(const std::string& filename, IndexHashtable& in
 				break;
 			case 3:
 				state = 0;
+				break;
+			case 4:
+				index.load_filename_entry(line);
 				break;
 			}
 		}

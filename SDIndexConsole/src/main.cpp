@@ -151,7 +151,7 @@ void parse_arguments(int argc, char* argv[]) {
 		} else if(cla == "-ext") {
 			i++;
 			if(i < argc) {
-				extensions = FileParser::split_string(argv[i], ',');
+				extensions = FileParser::split_string(argv[i], ' ');
 			} else {
 				std::cout << "Extensions not specified properly \n";
 				return;
@@ -319,6 +319,7 @@ void initial_menu() {
 			hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
 			stop = true;
 			idx.join();
+			std::cout << std::endl;
 		} else {
 			stop = false;
 			std::thread idx(print_and_refresh, std::ref(stop));
@@ -334,7 +335,7 @@ void initial_menu() {
 		break;
 
 	case 'x':
-		std::cout << "Enter the extensions seperated by comma (.pdf,.txt)\n";
+		std::cout << "Enter the extensions seperated by space (.pdf .txt)\n";
 		std::getline(std::cin, input);
 		extensions = FileParser::split_string(input, ',');
 		break;
@@ -374,6 +375,7 @@ void main_menu() {
 				hasIndex = FileParser::index_directory_and_subdirectories(dirpath, index, extensions);
 				stop = true;
 				idx.join();
+				std::cout << std::endl;
 			} else {
 				stop = false;
 				std::thread idx(print_and_refresh, std::ref(stop));

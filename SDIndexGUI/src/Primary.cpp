@@ -216,6 +216,9 @@ void Primary::on_dir_changed(wxFileDirPickerEvent& evt) {
 	instructions_text->SetLabel("Indexing...");
 	instructions_text->SetForegroundColour(wxColor(204, 102, 0));
 
+	FileParser::toLowercase = toLowercase;
+	FileParser::ommitNumbers = ommitNumbers;
+	FileParser::ommitSpecialCharacters = ommitSpecialCharacters;
 	FileParser::allowExtensions = extensionsInclude;
 	std::string extString = std::string(extensionsArea->GetLineText(0));
 	extensions = FileParser::split_string(extString, ' ');
@@ -302,7 +305,7 @@ void Primary::on_save_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_clear_clicked(wxCommandEvent& evt) {
+void Primary::on_clear_clicked(wxCommandEvent& evt) {
 
 	hashtable.clear();
 	queryArea->Clear();
@@ -318,7 +321,7 @@ void sdindex::Primary::on_clear_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_case_clicked(wxCommandEvent& evt) {
+void Primary::on_case_clicked(wxCommandEvent& evt) {
 
 	wxFont cbf = get_font1();
 
@@ -333,7 +336,7 @@ void sdindex::Primary::on_case_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_ommit_numbers_clicked(wxCommandEvent& evt) {
+void Primary::on_ommit_numbers_clicked(wxCommandEvent& evt) {
 
 	wxFont cbf = get_font1();
 
@@ -348,7 +351,7 @@ void sdindex::Primary::on_ommit_numbers_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_ommit_special_clicked(wxCommandEvent& evt) {
+void Primary::on_ommit_special_clicked(wxCommandEvent& evt) {
 
 	wxFont cbf = get_font1();
 
@@ -363,7 +366,7 @@ void sdindex::Primary::on_ommit_special_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_subdirectories_clicked(wxCommandEvent& evt) {
+void Primary::on_subdirectories_clicked(wxCommandEvent& evt) {
 
 	wxFont cbf = get_font1();
 
@@ -378,7 +381,7 @@ void sdindex::Primary::on_subdirectories_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_extensions_clicked(wxCommandEvent& evt) {
+void Primary::on_extensions_clicked(wxCommandEvent& evt) {
 
 	if(extensionsToggleButton->GetValue()) {
 		extensionsToggleButton->SetLabel("Include");
@@ -430,7 +433,7 @@ void Primary::on_query_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_copy_clicked(wxCommandEvent& evt) {
+void Primary::on_copy_clicked(wxCommandEvent& evt) {
 
 	bool hasSelection = false;
 
@@ -463,7 +466,7 @@ void sdindex::Primary::on_copy_clicked(wxCommandEvent& evt) {
 
 
 
-void sdindex::Primary::on_enter_pressed(wxCommandEvent& evt) {
+void Primary::on_enter_pressed(wxCommandEvent& evt) {
 
 	on_query_clicked(evt);
 }

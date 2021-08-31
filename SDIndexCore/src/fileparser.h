@@ -59,10 +59,6 @@ namespace sdindex {
 		static void remove_numbers(std::string& word);
 
 
-		// Checks whether a file exists
-		static bool file_exists(const std::string& filename);
-
-
 		// Loads a file containing index data to the index hashtable specified
 		static bool load_index_file(const std::string& filename, IndexHashtable& index);
 
@@ -91,7 +87,7 @@ namespace sdindex {
 
 
 		// Parses a line checking the data and populating the index
-		static bool parse_line(const std::string& line, IndexHashtable& index, const std::string& filename);
+		static bool parse_line(const std::string& line, IndexHashtable& index, const int filenameIndex);
 	};
 
 }
