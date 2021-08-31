@@ -2,7 +2,7 @@
 
 SDIndexer is an application that creates an index, based on file contents.
 You can query the index and get the files most relevant to your query. 
-You can use the **GUI** or **console**, and compile it for windows or inux. 
+You can use the **GUI** or **console**, and compile it for windows or linux. 
 
 
 ## Usage
@@ -29,8 +29,4 @@ which is only used when when compiled for windows to make the console more respo
 
 The `GUI` implementation uses the [wxWidgets](https://github.com/wxWidgets/wxWidgets)
 framework, which should work for most platforms.
-
-
-### Final notes
-
 
