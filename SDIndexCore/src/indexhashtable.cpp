@@ -275,14 +275,22 @@ bool IndexHashtable::merge(IndexHashtable* otherIndex) {
 					}
 					thisEntry = thisEntry->next;
 				}
-				otherEntry = otherEntry->next;
+				
 
 				// If you haven't found a match, steal the entry and restructure
 				if(thisEntry == nullptr) {
-					otherIndex->hashtable[i]->next = hashtable[i];
-					hashtable[i] = otherIndex->hashtable[i];
-					otherIndex->hashtable[i] = otherEntry;
+					thisEntry = new IndexHashtableEntry(otherEntry->get_value());
+					thisEntry->occurences = otherEntry->occurences;
+					otherEntry->occurences = nullptr;
+					thisEntry->next = hashtable[i];
+					hashtable[i] = thisEntry;
 				}
+				
+				otherEntry = otherEntry->next;
+				
+
+				
+
 			}
 		}
 	}
